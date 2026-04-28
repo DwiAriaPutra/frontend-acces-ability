@@ -6,10 +6,10 @@ Main Functions: getServiceTypes.
 Side Effects: HTTP GET request ke backend.
 */
 
-import { ApiResponse, ServiceType } from './types';
+import { ApiResponse, ServiceType } from "./types";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
 
 /**
  * Fetch all service types from backend
@@ -18,9 +18,9 @@ const BACKEND_URL =
 export const getServiceTypes = async (): Promise<ServiceType[]> => {
   try {
     const response = await fetch(`${BACKEND_URL}/api/v1/service-types`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -46,10 +46,13 @@ export const getServiceTypes = async (): Promise<ServiceType[]> => {
       }
     }
 
-    console.error('[API Error] getServiceTypes: Invalid response format', result);
+    console.error(
+      "[API Error] getServiceTypes: Invalid response format",
+      result
+    );
     return [];
   } catch (error) {
-    console.error('[API Error] getServiceTypes:', error);
+    console.error("[API Error] getServiceTypes:", error);
     return [];
   }
 };
