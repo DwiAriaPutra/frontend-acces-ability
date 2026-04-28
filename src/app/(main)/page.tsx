@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -25,7 +26,7 @@ export default function Home() {
           {/* Action Buttons */}
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <button className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Cari Pendamping</button>
-            <button className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Daftar Sebagai Provider</button>
+            <Link href="/register-provider" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Daftar Sebagai Provider</Link>
           </div>
         </div>
       </section>
