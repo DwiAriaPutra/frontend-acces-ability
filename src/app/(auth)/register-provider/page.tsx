@@ -311,6 +311,9 @@ export default function RegisterProviderPage() {
       if (result.data?.token) {
         localStorage.setItem('accessToken', result.data.token);
       }
+      if (result.data?.user) {
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+      }
     } catch (err) {
       console.error('[Component Error] handleSubmit:', err);
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan');

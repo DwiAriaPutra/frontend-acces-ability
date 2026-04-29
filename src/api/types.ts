@@ -84,3 +84,45 @@ export interface GoogleAuthResponse {
 export interface GoogleCallbackResponse {
   code: string;
 }
+
+export interface Booking {
+  id: string;
+  provider_id: string;
+  user_id: string;
+  service_type_id: number;
+  status: "pending" | "accepted" | "rejected" | "completed" | "cancelled";
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  total_price: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  provider?: {
+    id: string;
+    full_name: string;
+    profile_image_url?: string;
+    base_location_city?: string;
+    years_experience?: string;
+    rating?: string | number;
+  };
+  service_type?: {
+    id: number;
+    name: string;
+  };
+}
+
+export interface Provider {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone_number?: string;
+  bio?: string;
+  price_per_hour: number;
+  years_experience: number;
+  profile_image_url?: string;
+  base_location_city: string;
+  rating?: string | number;
+  specializations?: ServiceType[];
+}

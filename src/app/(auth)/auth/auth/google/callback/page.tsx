@@ -50,11 +50,11 @@ function GoogleCallbackContent() {
         if (result.success && result.data) {
           // Store token
           localStorage.setItem('accessToken', result.data.token);
-          console.log('[GoogleCallback] Login successful, redirecting to home');
+          console.log('[GoogleCallback] Login successful, redirecting to dashboard');
 
-          // Redirect to home after short delay
+          // Redirect to dashboard after short delay
           setTimeout(() => {
-            router.push('/');
+            router.push('/dashboard/user');
           }, 500);
         } else {
           setError(result.message || 'Google login failed');

@@ -76,7 +76,8 @@ export default function LoginPage() {
       }
 
       localStorage.setItem('accessToken', result.data.token);
-      window.location.href = '/';
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      window.location.href = '/dashboard/user';
     } catch (submitError) {
       console.error('Login submit error:', submitError);
       setError('Terjadi kesalahan saat login');

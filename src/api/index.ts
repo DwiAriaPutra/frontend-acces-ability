@@ -7,3 +7,5 @@ export * from "./types";
 export * from "./locations";
 export * from "./service-types";
 export * from "./auth";
+export * from "./bookings";
+export * from "./providers";
