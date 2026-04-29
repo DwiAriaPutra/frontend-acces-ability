@@ -1,23 +1,44 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getProviders, Provider } from "@/api";
+import Link from "next/link";
+import { getProviders, getServiceTypes, Provider, ServiceType } from "@/api";
 
 export default function CariProviderPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [categories, setCategories] = useState<ServiceType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua Kategori");
 
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getServiceTypes();
+        setCategories(data);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     const fetchProviders = async () => {
       setIsLoading(true);
-      const data = await getProviders({
-        search: searchQuery || undefined,
-        category: selectedCategory === "Semua Kategori" ? undefined : selectedCategory,
-      });
-      setProviders(data);
-      setIsLoading(false);
+      try {
+        const data = await getProviders({
+          search: searchQuery || undefined,
+          category:
+            selectedCategory === "Semua Kategori" ? undefined : selectedCategory,
+        });
+        setProviders(data);
+      } catch (error) {
+        console.error("Failed to fetch providers:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     const timer = setTimeout(() => {
@@ -33,7 +54,9 @@ export default function CariProviderPage() {
       <section>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-1">Cari Provider</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-1">
+              Cari Provider
+            </h2>
             <p className="text-gray-500 text-base">
               Temukan Pendamping Sesuai Kebutuhan Anda
             </p>
@@ -57,11 +80,12 @@ export default function CariProviderPage() {
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
-                <option>Semua Kategori</option>
-                <option>Komunikasi</option>
-                <option>Pendampingan</option>
-                <option>Mobilitas</option>
-                <option>Edukasi Dan Terapi</option>
+                <option value="Semua Kategori">Semua Kategori</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
               </select>
               <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                 unfold_more
@@ -73,7 +97,9 @@ export default function CariProviderPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-            <p className="text-gray-500 font-medium">Mencari provider terbaik...</p>
+            <p className="text-gray-500 font-medium">
+              Mencari provider terbaik...
+            </p>
           </div>
         ) : providers.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 text-center">
@@ -83,9 +109,12 @@ export default function CariProviderPage() {
               </span>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-gray-900">Belum ada provider yang terdaftar</h3>
+              <h3 className="text-2xl font-bold text-gray-900">
+                Belum ada provider yang terdaftar
+              </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                Maaf, saat ini belum ada provider yang sesuai dengan kriteria pencarian Anda. Silakan coba kata kunci atau kategori lain.
+                Maaf, saat ini belum ada provider yang sesuai dengan kriteria
+                pencarian Anda. Silakan coba kata kunci atau kategori lain.
               </p>
             </div>
           </div>
@@ -125,19 +154,28 @@ export default function CariProviderPage() {
                       >
                         star
                       </span>
-                      <span className="text-sm font-bold">{provider.rating || "5.0"}</span>
+                      <span className="text-sm font-bold">
+                        {provider.rating || "5.0"}
+                      </span>
                     </div>
                   </div>
                   <p className="text-green-600 text-sm font-semibold mb-4">
-                    {provider.specializations?.[0]?.name || "Pendamping Professional"}
+                    {provider.specializations?.[0]?.name ||
+                      "Pendamping Professional"}
                   </p>
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2 text-gray-500 text-sm">
-                      <span className="material-symbols-outlined text-base">location_on</span>
-                      <span>{provider.base_location_city || "Kota Tasikmalaya"}</span>
+                      <span className="material-symbols-outlined text-base">
+                        location_on
+                      </span>
+                      <span>
+                        {provider.base_location_city || "Kota Tasikmalaya"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-500 text-sm">
-                      <span className="material-symbols-outlined text-base">work_history</span>
+                      <span className="material-symbols-outlined text-base">
+                        work_history
+                      </span>
                       <span>
                         {provider.years_experience
                           ? `Pengalaman ${provider.years_experience} Tahun`
@@ -145,9 +183,11 @@ export default function CariProviderPage() {
                       </span>
                     </div>
                   </div>
-                  <button className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 active:scale-95">
-                    Lihat Profil
-                  </button>
+                  <Link href={`/dashboard/user/provider/${provider.id}`}>
+                    <button className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 active:scale-95">
+                      Lihat Profil
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}

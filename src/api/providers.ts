@@ -2,7 +2,7 @@
 Tujuan: API functions untuk provider-related endpoints.
 Caller: Components yang handle provider search dan profiles.
 Dependensi: types.ts
-Main Functions: getProviders.
+Main Functions: getProviders, getProviderById.
 */
 
 import { Provider, ApiResponse } from "./types";
@@ -82,5 +82,56 @@ export const getProviders = async (
       error instanceof Error ? error.message : "Unknown error occurred";
     console.error("[API Error] getProviders:", errorMessage);
     return [];
+  }
+};
+
+/**
+ * Get a single provider by ID
+ * @param id - The provider's ID
+ * @returns Provider object or null on error
+ */
+export const getProviderById = async (id: string): Promise<Provider | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+    
+    const url = `${baseUrl}/api/v1/providers/${id}`;
+
+    console.log("[API Debug] getProviderById: Fetching from", url);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[API Error] getProviderById (${response.status}):`,
+        errorText.substring(0, 200)
+      );
+      return null;
+    }
+
+    const result: ApiResponse<Provider> = await response.json();
+
+    if (result.success && result.data) {
+      console.log(`[API Success] getProviderById: Provider ${id} found`);
+      return result.data;
+    }
+
+    console.error(
+      "[API Error] getProviderById: Invalid response format",
+      result
+    );
+    return null;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("[API Error] getProviderById:", errorMessage);
+    return null;
   }
 };
