@@ -76,8 +76,16 @@ export default function LoginPage() {
       }
 
       localStorage.setItem('accessToken', result.data.token);
-      localStorage.setItem('user', JSON.stringify(result.data.user));
-      window.location.href = '/dashboard/user';
+      localStorage.setItem('user', JSON.stringify({
+        ...result.data.user,
+        providerProfile: result.data.providerProfile
+      }));
+      
+      if (result.data.user.role === 'provider') {
+        window.location.href = '/dashboard/provider';
+      } else {
+        window.location.href = '/dashboard/user';
+      }
     } catch (submitError) {
       console.error('Login submit error:', submitError);
       setError('Terjadi kesalahan saat login');

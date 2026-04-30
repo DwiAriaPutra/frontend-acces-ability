@@ -50,11 +50,19 @@ function GoogleCallbackContent() {
         if (result.success && result.data) {
           // Store token
           localStorage.setItem('accessToken', result.data.token);
+          localStorage.setItem('user', JSON.stringify({
+            ...result.data.user,
+            providerProfile: result.data.providerProfile
+          }));
           console.log('[GoogleCallback] Login successful, redirecting to dashboard');
+
+          const redirectPath = result.data.user.role === 'provider' 
+            ? '/dashboard/provider' 
+            : '/dashboard/user';
 
           // Redirect to dashboard after short delay
           setTimeout(() => {
-            router.push('/dashboard/user');
+            router.push(redirectPath);
           }, 500);
         } else {
           setError(result.message || 'Google login failed');

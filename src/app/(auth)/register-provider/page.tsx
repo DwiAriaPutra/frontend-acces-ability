@@ -312,7 +312,10 @@ export default function RegisterProviderPage() {
         localStorage.setItem('accessToken', result.data.token);
       }
       if (result.data?.user) {
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        localStorage.setItem('user', JSON.stringify({
+          ...result.data.user,
+          providerProfile: result.data.providerProfile
+        }));
       }
     } catch (err) {
       console.error('[Component Error] handleSubmit:', err);
