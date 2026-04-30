@@ -12,6 +12,7 @@ export default function DashboardLayout({
   const [userName, setUserName] = useState("User");
   const [userInitials, setUserInitials] = useState("U");
   const [userImage, setUserImage] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -31,6 +32,9 @@ export default function DashboardLayout({
             .substring(0, 2);
           setUserInitials(initials);
         }
+        if (user && user.role) {
+          setUserRole(user.role);
+        }
         if (user && user.image_url) {
           setUserImage(user.image_url);
         }
@@ -40,7 +44,7 @@ export default function DashboardLayout({
     }
   }, []);
 
-  const menuItems = [
+  const userMenuItems = [
     { name: "Dashboard", icon: "dashboard", href: "/dashboard/user" },
     {
       name: "Cari Provider",
@@ -54,6 +58,18 @@ export default function DashboardLayout({
     },
     { name: "Profile", icon: "person", href: "/dashboard/user/profil" },
   ];
+
+  const providerMenuItems = [
+    { name: "Dashboard", icon: "dashboard", href: "/dashboard/provider" },
+    {
+      name: "Permintaan Booking",
+      icon: "calendar_today",
+      href: "/dashboard/provider/permintaan-booking",
+    },
+    { name: "Profile", icon: "person", href: "/dashboard/provider/profil" },
+  ];
+
+  const menuItems = userRole === "provider" ? providerMenuItems : userMenuItems;
 
   return (
     <div className="min-h-screen bg-[#fcf9f8] text-[#1b1c1c] font-sans">
