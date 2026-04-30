@@ -1,9 +1,21 @@
+/*
+Header: User Dashboard Page
+Tujuan: Menampilkan ringkasan dashboard user berbasis data booking real-time dari backend.
+Caller: Route /dashboard/user.
+Dependensi: @/api (getUserBookings), localStorage token/user.
+Status: Active.
+*/
+
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { Booking, getUserBookings } from "@/api";
 
 export default function UserDashboardPage() {
   const [userName, setUserName] = useState("User");
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -17,7 +29,58 @@ export default function UserDashboardPage() {
         console.error("Error parsing user from localStorage", e);
       }
     }
+
+    const fetchBookings = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setIsLoadingBookings(false);
+        return;
+      }
+
+      const data = await getUserBookings(token);
+      setBookings(data);
+      setIsLoadingBookings(false);
+    };
+
+    fetchBookings();
   }, []);
+
+  const totalBookings = bookings.length;
+  const activeBookings = bookings.filter((booking) =>
+    ["pending", "accepted"].includes(booking.status)
+  ).length;
+  const completedBookings = bookings.filter(
+    (booking) => booking.status === "completed"
+  ).length;
+  const recentBookings = bookings.slice(0, 5);
+
+  const formatBookingDate = (dateValue?: string) => {
+    if (!dateValue) return "-";
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+  };
+
+  const getStatusBadge = (status: Booking["status"]) => {
+    switch (status) {
+      case "completed":
+        return { label: "Selesai", className: "bg-green-100 text-green-700" };
+      case "pending":
+        return { label: "Pending", className: "bg-yellow-100 text-yellow-700" };
+      case "accepted":
+        return { label: "Diterima", className: "bg-blue-100 text-blue-700" };
+      case "rejected":
+        return { label: "Ditolak", className: "bg-red-100 text-red-700" };
+      case "cancelled":
+        return { label: "Dibatalkan", className: "bg-gray-100 text-gray-700" };
+      default:
+        return { label: status, className: "bg-gray-100 text-gray-700" };
+    }
+  };
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-8">
@@ -55,7 +118,9 @@ export default function UserDashboardPage() {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Total Layanan</p>
-            <h3 className="text-3xl font-bold text-gray-900">12</h3>
+            <h3 className="text-3xl font-bold text-gray-900">
+              {isLoadingBookings ? "-" : totalBookings}
+            </h3>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl flex items-center gap-5 border border-gray-100 shadow-sm">
@@ -66,7 +131,9 @@ export default function UserDashboardPage() {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Layanan Aktif</p>
-            <h3 className="text-3xl font-bold text-gray-900">12</h3>
+            <h3 className="text-3xl font-bold text-gray-900">
+              {isLoadingBookings ? "-" : activeBookings}
+            </h3>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl flex items-center gap-5 border border-gray-100 shadow-sm">
@@ -75,7 +142,9 @@ export default function UserDashboardPage() {
           </div>
           <div>
             <p className="text-gray-500 text-sm">Layanan selesai</p>
-            <h3 className="text-3xl font-bold text-gray-900">5</h3>
+            <h3 className="text-3xl font-bold text-gray-900">
+              {isLoadingBookings ? "-" : completedBookings}
+            </h3>
           </div>
         </div>
       </section>
@@ -151,71 +220,72 @@ export default function UserDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                      AS
-                    </div>
-                    <span className="font-semibold text-gray-900">
-                      Annisa Salsabila
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-5 text-gray-600 text-sm">
-                  Penerjemah Bahasa Isyarat
-                </td>
-                <td className="px-6 py-5 text-gray-600 text-sm">12 Okt 2023</td>
-                <td className="px-6 py-5">
-                  <span className="px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-bold">
-                    Selesai
-                  </span>
-                </td>
-              </tr>
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
-                      KS
-                    </div>
-                    <span className="font-semibold text-gray-900">
-                      Kevin Setiawan
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-5 text-gray-600 text-sm">
-                  Pendamping Mobilitas
-                </td>
-                <td className="px-6 py-5 text-gray-600 text-sm">10 Okt 2023</td>
-                <td className="px-6 py-5">
-                  <span className="px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-xs font-bold">
-                    Selesai
-                  </span>
-                </td>
-              </tr>
-              <tr className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
-                      SM
-                    </div>
-                    <span className="font-semibold text-gray-900">
-                      Siska Monica
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-5 text-gray-600 text-sm">
-                  Terapi Okupasi
-                </td>
-                <td className="px-6 py-5 text-gray-600 text-sm">15 Okt 2023</td>
-                <td className="px-6 py-5">
-                  <span className="px-4 py-1.5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">
-                    Pending
-                  </span>
-                </td>
-              </tr>
+              {isLoadingBookings ? (
+                <tr>
+                  <td className="px-6 py-8 text-gray-500 text-sm" colSpan={4}>
+                    Memuat data booking...
+                  </td>
+                </tr>
+              ) : recentBookings.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-8 text-gray-500 text-sm" colSpan={4}>
+                    Belum ada riwayat layanan.
+                  </td>
+                </tr>
+              ) : (
+                recentBookings.map((booking) => {
+                  const providerName =
+                    booking.provider?.full_name || "Provider";
+                  const initials = providerName
+                    .split(" ")
+                    .map((part) => part[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+                  const statusBadge = getStatusBadge(booking.status);
+
+                  return (
+                    <tr
+                      key={booking.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                            {initials || "PR"}
+                          </div>
+                          <span className="font-semibold text-gray-900">
+                            {providerName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-gray-600 text-sm">
+                        {booking.service_type?.name || "Layanan Pendampingan"}
+                      </td>
+                      <td className="px-6 py-5 text-gray-600 text-sm">
+                        {formatBookingDate(booking.booking_date)}
+                      </td>
+                      <td className="px-6 py-5">
+                        <span
+                          className={`px-4 py-1.5 rounded-full text-xs font-bold ${statusBadge.className}`}
+                        >
+                          {statusBadge.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
+        </div>
+        <div className="p-4 border-t border-gray-100 flex justify-end">
+          <Link
+            href="/dashboard/user/booking"
+            className="text-sm font-semibold text-green-600 hover:text-green-700"
+          >
+            Lihat semua riwayat booking
+          </Link>
         </div>
       </section>
     </div>
