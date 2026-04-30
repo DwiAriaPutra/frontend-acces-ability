@@ -1,5 +1,8 @@
 /*
 Tujuan: Type definitions untuk API responses dan data structures.
+Caller: Semua layer frontend yang consume backend REST API.
+Dependensi: Tidak ada.
+Main Functions: Interface untuk booking, provider, auth, dan API response.
 */
 
 export interface Province {
@@ -85,16 +88,66 @@ export interface GoogleCallbackResponse {
   code: string;
 }
 
+export interface ProviderUser {
+  id: string;
+  email: string;
+  full_name: string;
+  phone_number?: string;
+  role?: string;
+  image_url?: string | null;
+}
+
+export interface ProviderSpecializationItem {
+  id: string;
+  provider_profile_id?: string;
+  service_type_id?: number;
+  serviceType?: ServiceType;
+}
+
+export interface Provider {
+  id: string;
+  user_id: string;
+  full_name?: string;
+  email?: string;
+  phone_number?: string;
+  bio?: string;
+  price_per_hour: number;
+  years_experience?: number | null;
+  profile_image_url?: string;
+  image_url?: string | null;
+  base_location_city: string;
+  base_location_lat?: number | string | null;
+  base_location_lng?: number | string | null;
+  avg_rating?: string | number;
+  rating?: string | number;
+  is_verified?: boolean;
+  verification_status?: string;
+  regency_name?: string;
+  province_name?: string;
+  user?: ProviderUser;
+  specializations?: ProviderSpecializationItem[];
+  availabilities?: Array<Record<string, unknown>>;
+}
+
 export interface Booking {
   id: string;
-  provider_id: string;
+  booking_code?: string;
+  provider_id?: string;
+  provider_profile_id?: string;
   user_id: string;
   service_type_id: number;
+  duration_hours?: number | string;
+  price_per_hour_snapshot?: number | string;
+  price_estimate?: number | string;
   status: "pending" | "accepted" | "rejected" | "completed" | "cancelled";
   booking_date: string;
   start_time: string;
   end_time: string;
-  total_price: number;
+  location_lat?: number | string | null;
+  location_lng?: number | string | null;
+  request_notes?: string | null;
+  cancel_reason?: string | null;
+  total_price: number | string;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -105,6 +158,7 @@ export interface Booking {
     base_location_city?: string;
     years_experience?: string;
     rating?: string | number;
+    image_url?: string | null;
   };
   service_type?: {
     id: number;
@@ -112,17 +166,39 @@ export interface Booking {
   };
 }
 
-export interface Provider {
+export interface BookingStatusHistoryItem {
   id: string;
-  user_id: string;
-  full_name: string;
-  email: string;
-  phone_number?: string;
-  bio?: string;
-  price_per_hour: number;
-  years_experience: number;
-  profile_image_url?: string;
-  base_location_city: string;
-  rating?: string | number;
-  specializations?: ServiceType[];
+  booking_id: string;
+  from_status?: Booking["status"] | null;
+  to_status: Booking["status"];
+  changed_by: string;
+  changed_at: string;
+  notes?: string | null;
+  changedByUser?: ProviderUser;
+}
+
+export interface BookingDetail extends Booking {
+  user?: ProviderUser;
+  providerProfile?: Provider & {
+    user?: ProviderUser;
+  };
+  serviceType?: ServiceType;
+  statusHistories?: BookingStatusHistoryItem[];
+  review?: {
+    id: string;
+    rating: number;
+    comment?: string | null;
+    created_at?: string;
+  } | null;
+}
+
+export interface BookingCreatePayload {
+  provider_profile_id: string;
+  service_type_id: number;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  location_lat: number;
+  location_lng: number;
+  request_notes?: string;
 }

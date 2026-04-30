@@ -1,20 +1,111 @@
+/*
+Header: Cari Provider Dashboard Page
+Tujuan: Menampilkan daftar provider dan filter kategori yang terhubung ke endpoint backend.
+Caller: Route /dashboard/user/cari-provider.
+Dependensi: @/api (getProviders, getServiceTypes).
+Status: Active.
+*/
+
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getProviders, Provider } from "@/api";
+import Link from "next/link";
+import {
+  getProviders,
+  getServiceTypes,
+  getProvinces,
+  getRegencies,
+  Provider,
+  ServiceType,
+  Province,
+  Regency,
+} from "@/api";
 
 export default function CariProviderPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [regencies, setRegencies] = useState<Regency[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Semua Kategori");
+  const [selectedServiceTypeId, setSelectedServiceTypeId] = useState("all");
+  const [selectedProvinceId, setSelectedProvinceId] = useState("all");
+  const [selectedRegencyId, setSelectedRegencyId] = useState("all");
+  const [selectedMinYearsExperience, setSelectedMinYearsExperience] = useState("");
+  const [selectedMinPrice, setSelectedMinPrice] = useState("");
+  const [selectedMaxPrice, setSelectedMaxPrice] = useState("");
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [tempSearchQuery, setTempSearchQuery] = useState("");
+  const [tempServiceTypeId, setTempServiceTypeId] = useState("all");
+  const [tempProvinceId, setTempProvinceId] = useState("all");
+  const [tempRegencyId, setTempRegencyId] = useState("all");
+  const [tempMinYearsExperience, setTempMinYearsExperience] = useState("");
+  const [tempMinPrice, setTempMinPrice] = useState("");
+  const [tempMaxPrice, setTempMaxPrice] = useState("");
+
+  useEffect(() => {
+    const fetchServiceTypes = async () => {
+      const data = await getServiceTypes();
+      setServiceTypes(data);
+    };
+
+    const fetchProvinces = async () => {
+      const data = await getProvinces();
+      setProvinces(data);
+    };
+
+    fetchServiceTypes();
+    fetchProvinces();
+  }, []);
+
+  useEffect(() => {
+    const fetchRegencies = async () => {
+      if (!showFilterModal || tempProvinceId === "all") {
+        setRegencies([]);
+        if (tempProvinceId === "all") {
+          setTempRegencyId("all");
+        }
+        return;
+      }
+
+      setTempRegencyId("all");
+      const data = await getRegencies(tempProvinceId);
+      setRegencies(data);
+    };
+
+    fetchRegencies();
+  }, [tempProvinceId, showFilterModal]);
 
   useEffect(() => {
     const fetchProviders = async () => {
       setIsLoading(true);
+      const selectedId =
+        selectedServiceTypeId === "all"
+          ? undefined
+          : Number(selectedServiceTypeId);
+
+      const selectedProvince =
+        selectedProvinceId === "all" ? undefined : selectedProvinceId;
+
+      const selectedRegency =
+        selectedRegencyId === "all" ? undefined : selectedRegencyId;
+
+      const minYearsExperience =
+        selectedMinYearsExperience === ""
+          ? undefined
+          : Number(selectedMinYearsExperience);
+
+      const minPrice = selectedMinPrice === "" ? undefined : Number(selectedMinPrice);
+      const maxPrice = selectedMaxPrice === "" ? undefined : Number(selectedMaxPrice);
+
       const data = await getProviders({
-        search: searchQuery || undefined,
-        category: selectedCategory === "Semua Kategori" ? undefined : selectedCategory,
+        limit: 30,
+        serviceTypeId: selectedId,
+        provinceId: selectedProvince,
+        regencyId: selectedRegency,
+        minYearsExperience,
+        minPrice,
+        maxPrice,
       });
       setProviders(data);
       setIsLoading(false);
@@ -22,10 +113,56 @@ export default function CariProviderPage() {
 
     const timer = setTimeout(() => {
       fetchProviders();
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory]);
+  }, [
+    selectedServiceTypeId,
+    selectedProvinceId,
+    selectedRegencyId,
+    selectedMinYearsExperience,
+    selectedMinPrice,
+    selectedMaxPrice,
+  ]);
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredProviders = providers.filter((provider) => {
+    if (!normalizedSearch) return true;
+
+    const fullName =
+      provider.user?.full_name?.toLowerCase() ||
+      provider.full_name?.toLowerCase() ||
+      "";
+    const location = provider.base_location_city?.toLowerCase() || "";
+    const specialization =
+      provider.specializations
+        ?.map((item) => item.serviceType?.name?.toLowerCase() || "")
+        .join(" ") || "";
+
+    return (
+      fullName.includes(normalizedSearch) ||
+      location.includes(normalizedSearch) ||
+      specialization.includes(normalizedSearch)
+    );
+  });
+
+  const getProviderName = (provider: Provider) =>
+    provider.user?.full_name || provider.full_name || "Provider";
+
+  const getProviderImage = (provider: Provider) =>
+    provider.user?.image_url ||
+    provider.profile_image_url ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      getProviderName(provider)
+    )}&background=008000&color=fff`;
+
+  const getProviderSpecializations = (provider: Provider) =>
+    provider.specializations
+      ?.map((item) => item.serviceType?.name)
+      .filter((name): name is string => Boolean(name)) || [];
+
+  const getProviderRating = (provider: Provider) =>
+    provider.avg_rating ?? provider.rating ?? "0.0";
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-8">
@@ -38,36 +175,22 @@ export default function CariProviderPage() {
               Temukan Pendamping Sesuai Kebutuhan Anda
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-            <div className="relative flex-1 sm:min-w-[300px]">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                search
-              </span>
-              <input
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all"
-                placeholder="Cari Pendamping Cerdas"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="relative">
-              <select
-                className="w-full pl-4 pr-10 py-2 bg-white border border-gray-200 rounded-xl text-sm appearance-none min-w-[180px] focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option>Semua Kategori</option>
-                <option>Komunikasi</option>
-                <option>Pendampingan</option>
-                <option>Mobilitas</option>
-                <option>Edukasi Dan Terapi</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                unfold_more
-              </span>
-            </div>
-          </div>
+          <button
+            onClick={() => {
+              setTempSearchQuery(searchQuery);
+              setTempServiceTypeId(selectedServiceTypeId);
+              setTempProvinceId(selectedProvinceId);
+              setTempRegencyId(selectedRegencyId);
+              setTempMinYearsExperience(selectedMinYearsExperience);
+              setTempMinPrice(selectedMinPrice);
+              setTempMaxPrice(selectedMaxPrice);
+              setShowFilterModal(true);
+            }}
+            className="flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all active:scale-95 shadow-lg shadow-green-600/30 whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined text-xl">tune</span>
+            Filter Lanjutan
+          </button>
         </div>
 
         {isLoading ? (
@@ -75,7 +198,7 @@ export default function CariProviderPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
             <p className="text-gray-500 font-medium">Mencari provider terbaik...</p>
           </div>
-        ) : providers.length === 0 ? (
+        ) : filteredProviders.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 text-center">
             <div className="w-48 h-48 bg-gray-50 rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-gray-300 text-8xl">
@@ -91,21 +214,16 @@ export default function CariProviderPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {providers.map((provider) => (
+            {filteredProviders.map((provider) => (
               <div
                 key={provider.id}
                 className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    alt={provider.full_name}
+                    alt={getProviderName(provider)}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    src={
-                      provider.profile_image_url ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        provider.full_name
-                      )}&background=008000&color=fff`
-                    }
+                    src={getProviderImage(provider)}
                   />
                   <div className="absolute top-4 right-4">
                     <span className="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">
@@ -116,7 +234,7 @@ export default function CariProviderPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-gray-800 text-lg line-clamp-1">
-                      {provider.full_name}
+                      {getProviderName(provider)}
                     </h3>
                     <div className="flex items-center gap-0.5">
                       <span
@@ -125,16 +243,20 @@ export default function CariProviderPage() {
                       >
                         star
                       </span>
-                      <span className="text-sm font-bold">{provider.rating || "5.0"}</span>
+                      <span className="text-sm font-bold">{getProviderRating(provider)}</span>
                     </div>
                   </div>
                   <p className="text-green-600 text-sm font-semibold mb-4">
-                    {provider.specializations?.[0]?.name || "Pendamping Professional"}
+                    {getProviderSpecializations(provider)[0] || "Pendamping Professional"}
                   </p>
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2 text-gray-500 text-sm">
                       <span className="material-symbols-outlined text-base">location_on</span>
-                      <span>{provider.base_location_city || "Kota Tasikmalaya"}</span>
+                      <span>
+                        {provider.regency_name && provider.province_name
+                          ? `${provider.regency_name}, ${provider.province_name}`
+                          : provider.base_location_city || "Kota Tasikmalaya"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-500 text-sm">
                       <span className="material-symbols-outlined text-base">work_history</span>
@@ -145,15 +267,179 @@ export default function CariProviderPage() {
                       </span>
                     </div>
                   </div>
-                  <button className="w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 active:scale-95">
+                  {getProviderSpecializations(provider).length > 1 ? (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {getProviderSpecializations(provider).slice(0, 3).map((name) => (
+                        <span
+                          key={name}
+                          className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <Link
+                    href={`/dashboard/user/cari-provider/${provider.id}`}
+                    className="block w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 active:scale-95 text-center"
+                  >
                     Lihat Profil
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {/* Filter Modal */}
+      {showFilterModal ? (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Filter Lanjutan</h2>
+              <p className="text-sm text-gray-500 mt-1">Sesuaikan parameter pencarian provider</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Search Query Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Cari Nama atau Lokasi</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                    search
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Nama pendamping, kota, atau keahlian..."
+                    value={tempSearchQuery}
+                    onChange={(e) => setTempSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Province Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Provinsi</label>
+                <select
+                  value={tempProvinceId}
+                  onChange={(e) => setTempProvinceId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 transition-all bg-white"
+                >
+                  <option value="all">Semua Provinsi</option>
+                  {provinces.map((province) => (
+                    <option key={province.id} value={province.id}>
+                      {province.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Regency Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Kabupaten / Kota</label>
+                <select
+                  value={tempRegencyId}
+                  onChange={(e) => setTempRegencyId(e.target.value)}
+                  disabled={tempProvinceId === "all"}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 transition-all bg-white disabled:bg-gray-100 disabled:text-gray-400"
+                >
+                  <option value="all">Semua Kabupaten / Kota</option>
+                  {regencies.map((regency) => (
+                    <option key={regency.id} value={regency.id}>
+                      {regency.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Experience Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Minimal Pengalaman (Tahun)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="Contoh: 3"
+                  value={tempMinYearsExperience}
+                  onChange={(e) => setTempMinYearsExperience(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                />
+              </div>
+
+              {/* Price Filter */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Harga Minimum</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1000}
+                    placeholder="0"
+                    value={tempMinPrice}
+                    onChange={(e) => setTempMinPrice(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Harga Maksimum</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1000}
+                    placeholder="0"
+                    value={tempMaxPrice}
+                    onChange={(e) => setTempMaxPrice(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Service Type Filter */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Kategori Layanan</label>
+                <select
+                  value={tempServiceTypeId}
+                  onChange={(e) => setTempServiceTypeId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-green-500 transition-all bg-white"
+                >
+                  <option value="all">Semua Kategori</option>
+                  {serviceTypes.map((serviceType) => (
+                    <option key={serviceType.id} value={serviceType.id}>
+                      {serviceType.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+              <button
+                onClick={() => setShowFilterModal(false)}
+                className="px-6 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setSearchQuery(tempSearchQuery);
+                  setSelectedServiceTypeId(tempServiceTypeId);
+                  setSelectedProvinceId(tempProvinceId);
+                  setSelectedRegencyId(tempRegencyId);
+                  setSelectedMinYearsExperience(tempMinYearsExperience);
+                  setSelectedMinPrice(tempMinPrice);
+                  setSelectedMaxPrice(tempMaxPrice);
+                  setShowFilterModal(false);
+                }}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all active:scale-95"
+              >
+                Terapkan Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
