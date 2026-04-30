@@ -377,7 +377,7 @@ export default function BookingOrderPage() {
               </p>
               {specializations.length === 0 ? (
                 <p className="mt-2 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800 border border-amber-100">
-                  Provider ini belum mengisi spesialisasi atau jadwal. Booking tetap bisa diajukan, tapi pastikan service type dan lokasi sudah benar.
+                  Provider ini belum mengisi spesialisasi atau jadwal. Booking tetap bisa diajukan, tapi pastikan kategori layanan dan lokasi sudah benar.
                 </p>
               ) : null}
             </div>

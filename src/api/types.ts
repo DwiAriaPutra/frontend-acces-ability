@@ -27,6 +27,16 @@ export interface ApiResponse<T> {
   data?: T;
 }
 
+export interface PaginatedProviders {
+  items: Provider[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
 export interface RegisterProviderPayload {
   full_name: string;
   email: string;

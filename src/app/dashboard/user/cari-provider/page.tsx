@@ -20,6 +20,7 @@ import {
   Province,
   Regency,
 } from "@/api";
+import { PaginatedProviders } from "@/api/types";
 
 export default function CariProviderPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -42,6 +43,9 @@ export default function CariProviderPage() {
   const [tempMinYearsExperience, setTempMinYearsExperience] = useState("");
   const [tempMinPrice, setTempMinPrice] = useState("");
   const [tempMaxPrice, setTempMaxPrice] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     const fetchServiceTypes = async () => {
@@ -58,7 +62,7 @@ export default function CariProviderPage() {
     fetchProvinces();
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchRegencies = async () => {
       if (!showFilterModal || tempProvinceId === "all") {
         setRegencies([]);
@@ -76,9 +80,12 @@ export default function CariProviderPage() {
     fetchRegencies();
   }, [tempProvinceId, showFilterModal]);
 
-  useEffect(() => {
+    // Initial load when filters change
+    useEffect(() => {
     const fetchProviders = async () => {
       setIsLoading(true);
+        setProviders([]);
+        setCurrentPage(1);
       const selectedId =
         selectedServiceTypeId === "all"
           ? undefined
@@ -100,6 +107,7 @@ export default function CariProviderPage() {
 
       const data = await getProviders({
         limit: 30,
+        page: 1,
         serviceTypeId: selectedId,
         provinceId: selectedProvince,
         regencyId: selectedRegency,
@@ -107,13 +115,24 @@ export default function CariProviderPage() {
         minPrice,
         maxPrice,
       });
-      setProviders(data);
+
+      // Handle both array response and paginated response
+      if (Array.isArray(data)) {
+        setProviders(data);
+        setTotalPages(0);
+      } else if (data && typeof data === "object" && "items" in data && "pagination" in data) {
+        const paginatedData = data as PaginatedProviders;
+        setProviders(paginatedData.items);
+        setTotalPages(paginatedData.pagination?.total_pages || 0);
+        setCurrentPage(paginatedData.pagination?.page || 1);
+      }
+
       setIsLoading(false);
     };
 
     const timer = setTimeout(() => {
       fetchProviders();
-    }, 300);
+      }, 300);
 
     return () => clearTimeout(timer);
   }, [
@@ -124,6 +143,86 @@ export default function CariProviderPage() {
     selectedMinPrice,
     selectedMaxPrice,
   ]);
+
+    // Load more on scroll
+    const loadMoreProviders = React.useCallback(async () => {
+      if (isLoadingMore || isLoading || currentPage >= totalPages) return;
+
+      setIsLoadingMore(true);
+      const nextPage = currentPage + 1;
+
+      const selectedId =
+        selectedServiceTypeId === "all"
+          ? undefined
+          : Number(selectedServiceTypeId);
+
+      const selectedProvince =
+        selectedProvinceId === "all" ? undefined : selectedProvinceId;
+
+      const selectedRegency =
+        selectedRegencyId === "all" ? undefined : selectedRegencyId;
+
+      const minYearsExperience =
+        selectedMinYearsExperience === ""
+          ? undefined
+          : Number(selectedMinYearsExperience);
+
+      const minPrice = selectedMinPrice === "" ? undefined : Number(selectedMinPrice);
+      const maxPrice = selectedMaxPrice === "" ? undefined : Number(selectedMaxPrice);
+
+      try {
+        const data = await getProviders({
+          limit: 30,
+          page: nextPage,
+          serviceTypeId: selectedId,
+          provinceId: selectedProvince,
+          regencyId: selectedRegency,
+          minYearsExperience,
+          minPrice,
+          maxPrice,
+        });
+
+        if (data && typeof data === "object" && "items" in data && "pagination" in data) {
+          const paginatedData = data as PaginatedProviders;
+          setProviders((prev) => [...prev, ...paginatedData.items]);
+          setCurrentPage(nextPage);
+          setTotalPages(paginatedData.pagination?.total_pages || 0);
+        }
+      } catch (error) {
+        console.error("Error loading more providers:", error);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    }, [
+      isLoadingMore,
+      isLoading,
+      currentPage,
+      totalPages,
+      selectedServiceTypeId,
+      selectedProvinceId,
+      selectedRegencyId,
+      selectedMinYearsExperience,
+      selectedMinPrice,
+      selectedMaxPrice,
+    ]);
+
+    // Intersection observer for infinite scroll
+    useEffect(() => {
+      const sentinel = document.getElementById("scroll-sentinel");
+      if (!sentinel) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && currentPage < totalPages) {
+            loadMoreProviders();
+          }
+        },
+        { threshold: 0.1 }
+      );
+
+      observer.observe(sentinel);
+      return () => observer.disconnect();
+    }, [currentPage, totalPages, loadMoreProviders]);
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const filteredProviders = providers.filter((provider) => {
@@ -289,7 +388,24 @@ export default function CariProviderPage() {
               </div>
             ))}
           </div>
-        )}
+          )}
+
+          {!isLoading && filteredProviders.length > 0 && (
+            <div
+              id="scroll-sentinel"
+              className="flex justify-center py-12"
+            >
+              {isLoadingMore && currentPage < totalPages && (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                  <p className="text-gray-500 text-sm">Memuat provider lebih banyak...</p>
+                </div>
+              )}
+              {currentPage >= totalPages && providers.length > 0 && (
+                <p className="text-gray-400 text-sm">Tidak ada provider lagi</p>
+              )}
+            </div>
+          )}
       </section>
 
       {/* Filter Modal */}

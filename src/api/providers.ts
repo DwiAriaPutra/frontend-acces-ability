@@ -5,7 +5,7 @@ Dependensi: types.ts
 Main Functions: getProviders.
 */
 
-import { Provider, ApiResponse } from "./types";
+import { Provider, ApiResponse, PaginatedProviders } from "./types";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
@@ -13,7 +13,7 @@ const BACKEND_URL =
 /**
  * Get list of providers with optional filtering
  * @param query - Optional search query or filter parameters
- * @returns List of providers or empty array on error
+ * @returns List of providers (array) or paginated response with pagination metadata
  */
 export const getProviders = async (params?: {
   city?: string;
@@ -25,7 +25,7 @@ export const getProviders = async (params?: {
   maxPrice?: number;
   limit?: number;
   page?: number;
-}): Promise<Provider[]> => {
+}): Promise<Provider[] | PaginatedProviders> => {
   try {
     const baseUrl = BACKEND_URL.endsWith("/")
       ? BACKEND_URL.slice(0, -1)
@@ -81,7 +81,18 @@ export const getProviders = async (params?: {
     const result: ApiResponse<any> = await response.json();
 
     if (result.success) {
-      // Handle result.data as array or result.data.items as array
+      // If data has items and pagination, return paginated response
+      if (result.data?.items && result.data?.pagination) {
+        console.log(
+          `[API Success] getProviders: ${result.data.items.length} providers found (page ${result.data.pagination.page}/${result.data.pagination.total_pages})`
+        );
+        return {
+          items: result.data.items,
+          pagination: result.data.pagination,
+        };
+      }
+
+      // Otherwise return array directly (backward compatibility)
       const providers = Array.isArray(result.data)
         ? result.data
         : result.data?.items || [];
