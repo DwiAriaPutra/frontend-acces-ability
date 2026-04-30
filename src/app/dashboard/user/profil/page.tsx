@@ -1,6 +1,16 @@
+/*
+Header: Profil User Dashboard Page
+Tujuan: Menampilkan profil user beserta ringkasan booking yang diambil dari backend.
+Caller: Route /dashboard/user/profil.
+Dependensi: @/api (getUserBookings), localStorage accessToken + user.
+Status: Active.
+*/
+
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { getUserBookings } from "@/api";
+import type { Booking } from "@/api";
 
 export default function ProfilPage() {
   const [user, setUser] = useState({
@@ -8,9 +18,14 @@ export default function ProfilPage() {
     email: "",
     phone: "-",
     role: "user",
-    image_url: ""
+    image_url: "",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [bookingStats, setBookingStats] = useState({
+    totalBookings: 0,
+    completedServices: 0,
+  });
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -22,20 +37,43 @@ export default function ProfilPage() {
           email: storedUser.email || "",
           phone: storedUser.phone_number || storedUser.phone || "-",
           role: storedUser.role || "user",
-          image_url: storedUser.image_url || ""
+          image_url: storedUser.image_url || "",
         });
-      } catch (e) {
-        console.error("Error parsing user from localStorage", e);
+      } catch (error) {
+        console.error("Error parsing user from localStorage", error);
       }
     }
+
     setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const loadBookingStats = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setIsStatsLoading(false);
+        return;
+      }
+
+      const bookings = await getUserBookings(token);
+      const typedBookings = bookings as Booking[];
+
+      setBookingStats({
+        totalBookings: typedBookings.length,
+        completedServices: typedBookings.filter((booking) => booking.status === "completed").length,
+      });
+      setIsStatsLoading(false);
+    };
+
+    loadBookingStats();
   }, []);
 
   const getInitials = (name: string) => {
     if (!name) return "U";
+
     return name
       .split(" ")
-      .map((n) => n[0])
+      .map((part) => part[0])
       .join("")
       .toUpperCase()
       .substring(0, 2);
@@ -50,7 +88,6 @@ export default function ProfilPage() {
       <section>
         <h2 className="text-3xl font-bold text-gray-900 mb-8">Profil Saya</h2>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Form */}
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
               <div className="relative">
@@ -73,7 +110,7 @@ export default function ProfilPage() {
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">{user.full_name || "User"}</h3>
                 <p className="text-gray-500 text-sm mb-4">{user.email}</p>
                 <span className="px-4 py-1.5 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider">
-                  {user.role === 'provider' ? 'Penyedia Layanan' : 'Pengguna'}
+                  {user.role === "provider" ? "Penyedia Layanan" : "Pengguna"}
                 </span>
               </div>
             </div>
@@ -119,22 +156,29 @@ export default function ProfilPage() {
             </div>
           </div>
 
-          {/* Right Column: Stats */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center group hover:bg-green-600 transition-all duration-300">
               <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors">
                 <span className="material-symbols-outlined text-green-600 text-3xl group-hover:text-white">event_available</span>
               </div>
-              <p className="text-4xl font-black text-gray-900 mb-1 group-hover:text-white transition-colors">0</p>
-              <p className="text-gray-500 font-bold text-sm group-hover:text-white/80 transition-colors uppercase tracking-wider">Total Booking</p>
+              <p className="text-4xl font-black text-gray-900 mb-1 group-hover:text-white transition-colors">
+                {isStatsLoading ? "-" : bookingStats.totalBookings}
+              </p>
+              <p className="text-gray-500 font-bold text-sm group-hover:text-white/80 transition-colors uppercase tracking-wider">
+                Total Booking
+              </p>
             </div>
 
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center group hover:bg-green-600 transition-all duration-300">
               <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors">
                 <span className="material-symbols-outlined text-green-600 text-3xl group-hover:text-white">verified</span>
               </div>
-              <p className="text-4xl font-black text-gray-900 mb-1 group-hover:text-white transition-colors">0</p>
-              <p className="text-gray-500 font-bold text-sm group-hover:text-white/80 transition-colors uppercase tracking-wider">Layanan Selesai</p>
+              <p className="text-4xl font-black text-gray-900 mb-1 group-hover:text-white transition-colors">
+                {isStatsLoading ? "-" : bookingStats.completedServices}
+              </p>
+              <p className="text-gray-500 font-bold text-sm group-hover:text-white/80 transition-colors uppercase tracking-wider">
+                Layanan Selesai
+              </p>
             </div>
 
             <div className="bg-green-50 rounded-3xl p-8 border border-green-100">
