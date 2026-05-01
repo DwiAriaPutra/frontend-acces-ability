@@ -85,6 +85,12 @@ export interface RegisterSuccessResponse {
   };
 }
 
+export interface UpdateMyUserPayload {
+  full_name?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+}
+
 export interface GoogleAuthResponse {
   success: boolean;
   data?: {
@@ -130,13 +136,55 @@ export interface Provider {
   base_location_lng?: number | string | null;
   avg_rating?: string | number;
   rating?: string | number;
+  total_reviews?: number;
   is_verified?: boolean;
   verification_status?: string;
   regency_name?: string;
   province_name?: string;
+  province_id?: string;
+  regency_id?: string;
   user?: ProviderUser;
   specializations?: ProviderSpecializationItem[];
   availabilities?: Array<Record<string, unknown>>;
+}
+
+export interface UpdateMyProviderPayload {
+  bio?: string | null;
+  years_experience?: number | null;
+  price_per_hour?: number | null;
+  province_id?: string | null;
+  province_name?: string | null;
+  regency_id?: string | null;
+  regency_name?: string | null;
+  base_location_city?: string | null;
+  base_location_lat?: number | null;
+  base_location_lng?: number | null;
+}
+
+export interface ProviderCertificationItem {
+  id: string;
+  provider_profile_id: string;
+  file_url?: string;
+  verification_status?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ReviewItem {
+  id: string;
+  booking_id: string;
+  reviewer_user_id: string;
+  provider_profile_id: string;
+  rating: number;
+  comment?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateReviewPayload {
+  booking_id: string;
+  rating: number;
+  comment?: string;
 }
 
 export interface Booking {
@@ -161,6 +209,12 @@ export interface Booking {
   notes?: string;
   created_at: string;
   updated_at: string;
+  user?: {
+    id: string;
+    full_name: string;
+    image_url?: string | null;
+    email?: string;
+  };
   provider?: {
     id: string;
     full_name: string;
@@ -194,12 +248,7 @@ export interface BookingDetail extends Booking {
   };
   serviceType?: ServiceType;
   statusHistories?: BookingStatusHistoryItem[];
-  review?: {
-    id: string;
-    rating: number;
-    comment?: string | null;
-    created_at?: string;
-  } | null;
+  review?: ReviewItem | null;
 }
 
 export interface BookingCreatePayload {
