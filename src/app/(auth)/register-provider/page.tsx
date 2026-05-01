@@ -581,11 +581,11 @@ export default function RegisterProviderPage() {
 
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Kota/Wilayah <span className="text-red-500">*</span>
+                    Detail Alamat <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="contoh: Tasikmalaya"
+                    placeholder="Contoh: Jl. Raya Cikunir No. 12, Tasikmalaya"
                     value={formData.base_location_city}
                     onChange={(e) => handleInputChange('base_location_city', e.target.value)}
                     className="w-full h-12 px-4 rounded-lg border border-gray-200 focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-all outline-none text-gray-900"

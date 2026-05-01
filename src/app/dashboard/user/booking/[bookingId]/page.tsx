@@ -9,6 +9,7 @@ Main Functions: BookingDetailPage.
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import {
   BookingDetail,
@@ -17,6 +18,7 @@ import {
   getBookingHistory,
   cancelBooking,
 } from "@/api";
+import ReviewForm from "@/components/ReviewForm";
 
 const formatDate = (value?: string | null) => {
   if (!value) return "-";
@@ -133,7 +135,6 @@ export default function BookingDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
-
   useEffect(() => {
     const fetchBooking = async () => {
       const token = localStorage.getItem("accessToken");
@@ -187,13 +188,7 @@ export default function BookingDetailPage() {
     [booking, providerName]
   );
 
-  const fallbackProviderImage = useMemo(
-    () =>
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        providerName
-      )}&background=008000&color=fff`,
-    [providerName]
-  );
+  const existingReview = booking?.review || null;
 
   if (isLoading) {
     return (
@@ -257,13 +252,13 @@ export default function BookingDetailPage() {
 
       <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className={`rounded-3xl border ${statusConfig.borderColor} bg-white p-6 shadow-sm`}>
-          <img
+          <Image
             src={providerImage}
             alt={providerName}
+            width={320}
+            height={288}
             className="h-72 w-full rounded-2xl object-cover"
-            onError={(event) => {
-              event.currentTarget.src = fallbackProviderImage;
-            }}
+            unoptimized
           />
           <div className="mt-6 space-y-3">
             <div>
@@ -382,6 +377,21 @@ export default function BookingDetailPage() {
               </div>
             </div>
           ) : null}
+
+          <ReviewForm
+            bookingId={booking.id}
+            existingReview={existingReview}
+            onCreated={async () => {
+              const token = localStorage.getItem("accessToken");
+              if (!token) return;
+              const [detail, history] = await Promise.all([
+                getBookingDetail(token, booking.id),
+                getBookingHistory(token, booking.id),
+              ]);
+              setBooking(detail as BookingDetail);
+              setHistories(history as BookingStatusHistoryItem[]);
+            }}
+          />
 
           <div className={`rounded-3xl border ${statusConfig.borderColor} bg-white p-6 shadow-sm`}>
             <h2 className="text-xl font-bold text-gray-900">Status History</h2>

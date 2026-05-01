@@ -9,7 +9,7 @@ Main Functions: BookingPage.
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getUserBookings, Booking } from "@/api";
+import { getUserBookingsPaginated, Booking, PaginatedBookings } from "@/api";
 
 const formatDate = (value: string) => {
   const date = new Date(value);
@@ -88,8 +88,13 @@ const getStatusConfig = (status: string) => {
 
 export default function BookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; total_pages: number } | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageLimit, setPageLimit] = useState<number>(10);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -97,16 +102,44 @@ export default function BookingPage() {
       if (!token) {
         setIsLoggedIn(false);
         setIsLoading(false);
+        setHasInitialized(true);
         return;
       }
 
-      const data = await getUserBookings(token);
-      setBookings(data);
-      setIsLoading(false);
+      if (!hasInitialized) {
+        const statusParam = statusFilter && statusFilter !== "all" ? statusFilter : undefined;
+        const result = await getUserBookingsPaginated(token, { page: currentPage, limit: pageLimit, status: statusParam });
+        setBookings(result.items || []);
+        setPagination(result.pagination || null);
+        setIsLoading(false);
+        setHasInitialized(true);
+      }
     };
 
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    // Only refetch when filters CHANGE after initialization
+    if (!hasInitialized) return;
+
+    const fetchBookings = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      setIsLoading(true);
+      const statusParam = statusFilter && statusFilter !== "all" ? statusFilter : undefined;
+      const result = await getUserBookingsPaginated(token, { page: currentPage, limit: pageLimit, status: statusParam });
+      setBookings(result.items || []);
+      setPagination(result.pagination || null);
+      setIsLoading(false);
+    };
+
+    fetchBookings();
+  }, [currentPage, pageLimit, statusFilter]);
 
   const emptyState = useMemo(
     () =>
@@ -197,13 +230,44 @@ export default function BookingPage() {
               Kelola dan pantau status pemesanan layanan Anda
             </p>
           </div>
-          <Link
-            href="/dashboard/user/cari-provider"
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all active:scale-95"
-          >
-            <span className="material-symbols-outlined text-xl">add</span>
-            Booking Baru
-          </Link>
+          <div className="flex gap-2 items-center flex-wrap">
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setStatusFilter(e.target.value);
+              }}
+              className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            >
+              <option value="all">Semua Status</option>
+              <option value="pending">Menunggu</option>
+              <option value="accepted">Diterima</option>
+              <option value="completed">Selesai</option>
+              <option value="cancelled">Dibatalkan</option>
+            </select>
+
+            <select
+              value={pageLimit}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setPageLimit(Number(e.target.value));
+              }}
+              className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            >
+              <option value={5}>5 per halaman</option>
+              <option value={10}>10 per halaman</option>
+              <option value={25}>25 per halaman</option>
+              <option value={50}>50 per halaman</option>
+            </select>
+
+            <Link
+              href="/dashboard/user/cari-provider"
+              className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all active:scale-95"
+            >
+              <span className="material-symbols-outlined text-xl">add</span>
+              Booking Baru
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
@@ -342,6 +406,90 @@ export default function BookingPage() {
             );
           })}
         </div>
+
+        {bookings.length > 0 && pagination && (
+          <div className="mt-8 flex items-center justify-between flex-wrap gap-4 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+            <p className="text-sm text-gray-600 font-medium">
+              Menampilkan {bookings.length} dari {pagination.total} booking
+            </p>
+            <div className="flex gap-2 items-center flex-wrap">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={pagination.page <= 1}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-60"
+              >
+                <span className="material-symbols-outlined text-sm">chevron_left</span>
+              </button>
+
+              {pagination.total_pages <= 7 ? (
+                Array.from({ length: pagination.total_pages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
+                      pagination.page === page
+                        ? "bg-green-600 text-white"
+                        : "border border-gray-300 hover:bg-white"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))
+              ) : (
+                <>
+                  {pagination.page > 2 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-white text-xs font-bold"
+                      >
+                        1
+                      </button>
+                      {pagination.page > 3 && <span className="text-gray-400">...</span>}
+                    </>
+                  )}
+
+                  {Array.from({ length: Math.min(3, pagination.total_pages) }, (_, i) => {
+                    const page = Math.max(1, Math.min(pagination.page - 1 + i, pagination.total_pages - 2));
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
+                          pagination.page === page
+                            ? "bg-green-600 text-white"
+                            : "border border-gray-300 hover:bg-white"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  {pagination.page < pagination.total_pages - 1 && (
+                    <>
+                      {pagination.page < pagination.total_pages - 2 && <span className="text-gray-400">...</span>}
+                      <button
+                        onClick={() => setCurrentPage(pagination.total_pages)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-white text-xs font-bold"
+                      >
+                        {pagination.total_pages}
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+
+              <button
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={pagination.page >= pagination.total_pages}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-white disabled:opacity-60"
+              >
+                <span className="material-symbols-outlined text-sm">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

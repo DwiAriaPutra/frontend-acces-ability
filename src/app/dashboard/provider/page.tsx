@@ -9,52 +9,68 @@ Dependensi: @/api (getUserBookings, getProviderDetail), localStorage token/user.
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Booking, getUserBookings, getProviderDetail, Provider } from "@/api";
+import { useRouter } from "next/navigation";
+import { Booking, getUserBookings, getMyProvider, Provider } from "@/api";
 
 export default function ProviderDashboardPage() {
+  const router = useRouter();
   const [userName, setUserName] = useState("Provider");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [providerProfile, setProviderProfile] = useState<Provider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
+
+    // Role check: only "provider" can access this page
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
+        if (user.role !== "provider") {
+          console.warn("Access denied: User is not a provider");
+          setUnauthorized(true);
+          setIsLoading(false);
+          setTimeout(() => router.push("/dashboard/user"), 1500);
+          return;
+        }
         if (user && user.full_name) {
           setUserName(user.full_name);
         }
       } catch (e) {
         console.error("Error parsing user from localStorage", e);
-      }
-    }
-
-    const fetchData = async () => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
+        setUnauthorized(true);
         setIsLoading(false);
         return;
       }
+    }
 
+    if (!token) {
+      console.warn("No access token found");
+      setUnauthorized(true);
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchData = async () => {
       try {
         const bookingsData = await getUserBookings(token);
         setBookings(bookingsData);
-
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (user.providerProfile?.id) {
-          const profile = await getProviderDetail(user.providerProfile.id);
-          setProviderProfile(profile);
-        }
+        const profile = await getMyProvider(token);
+        if (profile) setProviderProfile(profile);
       } catch (error) {
         console.error("Error fetching provider data:", error);
+        const msg = error instanceof Error ? error.message : String(error);
+        setError(msg);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [router]);
 
   const totalBookings = bookings.length;
   const pendingBookings = bookings.filter((b) => b.status === "pending").length;
@@ -97,8 +113,42 @@ export default function ProviderDashboardPage() {
     return `${diffDays} hari yang lalu`;
   };
 
+  if (unauthorized) {
+    return (
+      <section className="p-8 max-w-7xl mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+          <h2 className="text-2xl font-bold text-red-900 mb-2">
+            Akses Ditolak
+          </h2>
+          <p className="text-red-700 mb-4">
+            Anda harus login sebagai provider untuk mengakses halaman ini.
+          </p>
+          <p className="text-red-600 text-sm">
+            Anda akan diarahkan ke dashboard user dalam beberapa saat...
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4">
+          <div className="text-red-600 text-2xl">⚠️</div>
+          <div className="flex-1">
+            <h3 className="font-bold text-red-900 mb-1">Error Memuat Data</h3>
+            <p className="text-red-700 text-sm">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-3 text-sm text-red-700 font-bold hover:underline"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      )}
       {/* Hero Banner Section */}
       <div className="relative h-64 rounded-3xl overflow-hidden shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-800/70 to-transparent z-10"></div>
@@ -221,7 +271,10 @@ export default function ProviderDashboardPage() {
                   className="material-symbols-outlined text-amber-400 text-3xl"
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
-                  {star <= Math.floor(providerProfile?.avg_rating || 5)
+                  {star <=
+                  Math.floor(
+                    Number(providerProfile?.avg_rating) || 5
+                  )
                     ? "star"
                     : "star_outline"}
                 </span>

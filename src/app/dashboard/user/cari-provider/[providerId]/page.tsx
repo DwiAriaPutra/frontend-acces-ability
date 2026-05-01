@@ -1,6 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getProviderDetail } from "@/api";
+import { getProviderDetail, getProviderReviews } from "@/api";
+import CertPreviewModal from "@/components/CertPreviewModal";
+import ReviewList from "@/components/ReviewList";
 
 type ProviderDetailPageProps = {
   params: Promise<{
@@ -38,15 +41,18 @@ export default async function ProviderDetailPage({ params }: ProviderDetailPageP
     notFound();
   }
 
+  const providerReviews = await getProviderReviews(provider.id, { limit: 3 });
+
   const providerName = provider.user?.full_name || provider.full_name || "Provider";
   const providerImage =
     provider.user?.image_url ||
     provider.profile_image_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(providerName)}&background=008000&color=fff`;
 
+  type Specialization = { serviceType?: { name?: string } };
   const specializations =
-    provider.specializations
-      ?.map((item) => item.serviceType?.name)
+    (provider.specializations as Specialization[] | undefined)
+      ?.map((item) => item?.serviceType?.name)
       .filter((name): name is string => Boolean(name)) || [];
 
   return (
@@ -69,10 +75,13 @@ export default async function ProviderDetailPage({ params }: ProviderDetailPageP
 
       <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <img
+          <Image
             src={providerImage}
             alt={providerName}
+            width={320}
+            height={288}
             className="h-72 w-full rounded-2xl object-cover"
+            unoptimized
           />
           <div className="mt-6 space-y-3">
             <div className="flex items-center gap-2">
@@ -84,15 +93,29 @@ export default async function ProviderDetailPage({ params }: ProviderDetailPageP
               ) : null}
             </div>
             <p className="text-gray-500">{provider.base_location_city}</p>
-            <p className="text-sm font-semibold text-gray-700">
-              {provider.avg_rating ?? provider.rating ?? "0.0"} Rating
-            </p>
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <span className="text-yellow-500">★</span>
+              <span>{Number(provider.avg_rating ?? provider.rating ?? 0).toFixed(1)}</span>
+              <span className="text-gray-400">({provider.total_reviews ?? 0} ulasan)</span>
+            </div>
             <p className="text-sm text-gray-600">{formatExperience(provider.years_experience)}</p>
             <p className="text-sm font-semibold text-green-700">
               {provider.province_name && provider.regency_name
                 ? `${provider.regency_name}, ${provider.province_name}`
                 : "Lokasi belum tersedia"}
             </p>
+            <div className="mt-3 space-y-2">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">Harga per jam:</span>{" "}
+                {provider.price_per_hour ? `Rp ${Number(provider.price_per_hour).toLocaleString()}` : "-"}
+              </p>
+              {provider.verification_status ? (
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">Status Verifikasi:</span>{" "}
+                  {provider.verification_status}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -119,6 +142,43 @@ export default async function ProviderDetailPage({ params }: ProviderDetailPageP
               ) : (
                 <span className="text-sm text-gray-500">Belum ada spesialisasi.</span>
               )}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900">Sertifikasi & Kualifikasi</h2>
+            <div className="mt-4">
+              {/* render client-side modal component for previews */}
+              <CertPreviewModal
+                // normalize possible shapes to a single array
+                certifications={
+                  (
+                    ((provider as unknown) as {
+                      certifications?: unknown[];
+                      provider_certifications?: unknown[];
+                      certification_items?: unknown[];
+                    }).certifications ||
+                    ((provider as unknown) as {
+                      certifications?: unknown[];
+                      provider_certifications?: unknown[];
+                      certification_items?: unknown[];
+                    }).provider_certifications ||
+                    ((provider as unknown) as {
+                      certifications?: unknown[];
+                      provider_certifications?: unknown[];
+                      certification_items?: unknown[];
+                    }).certification_items ||
+                    []
+                  ) as any
+                }
+              />
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900">Ulasan Terbaru</h2>
+            <div className="mt-4">
+              <ReviewList items={providerReviews.items} />
             </div>
           </div>
 

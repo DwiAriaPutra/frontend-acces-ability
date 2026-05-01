@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -14,6 +15,7 @@ export default function DashboardLayout({
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -69,7 +71,44 @@ export default function DashboardLayout({
     { name: "Profile", icon: "person", href: "/dashboard/provider/profil" },
   ];
 
-  const menuItems = userRole === "provider" ? providerMenuItems : userMenuItems;
+  const adminMenuItems = [
+    { name: "Dashboard", icon: "dashboard", href: "/dashboard/admin" },
+    {
+      name: "Verifikasi Provider",
+      icon: "verified_user",
+      href: "/dashboard/admin/verification",
+    },
+  ];
+
+  let menuItems = userMenuItems;
+  if (userRole === "provider") {
+    menuItems = providerMenuItems;
+  } else if (userRole === "admin") {
+    menuItems = adminMenuItems;
+  }
+
+  useEffect(() => {
+    // If user role is known, ensure they're on the correct dashboard path
+    if (!userRole || !pathname) return;
+
+    // If provider but on user/admin routes, redirect to provider dashboard
+    if (userRole === "provider" && (pathname.startsWith("/dashboard/user") || pathname.startsWith("/dashboard/admin"))) {
+      router.replace("/dashboard/provider");
+      return;
+    }
+
+    // If admin but on user/provider routes, redirect to admin dashboard
+    if (userRole === "admin" && (pathname.startsWith("/dashboard/user") || pathname.startsWith("/dashboard/provider"))) {
+      router.replace("/dashboard/admin");
+      return;
+    }
+
+    // If non-admin non-provider but on provider/admin routes, redirect to user dashboard
+    if (userRole !== "provider" && userRole !== "admin" && (pathname.startsWith("/dashboard/provider") || pathname.startsWith("/dashboard/admin"))) {
+      router.replace("/dashboard/user");
+      return;
+    }
+  }, [userRole, pathname, router]);
 
   return (
     <div className="min-h-screen bg-[#fcf9f8] text-[#1b1c1c] font-sans">
@@ -137,15 +176,7 @@ export default function DashboardLayout({
 
         {/* Main Content */}
         <div className="flex-1 md:ml-64">
-          <header className="sticky top-0 z-30 flex items-center justify-between px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
-            <div className="flex items-center gap-2 text-gray-600">
-              <span className="material-symbols-outlined text-green-600">
-                location_on
-              </span>
-              <span className="font-medium">
-                Kota Tasikmalaya &gt; Jawa Barat, Indonesia
-              </span>
-            </div>
+          <header className="sticky top-0 z-30 flex items-center justify-end px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-gray-400 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 cursor-pointer">
