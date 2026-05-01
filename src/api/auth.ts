@@ -447,3 +447,84 @@ export const handleGoogleCallback = async (
     };
   }
 };
+
+/**
+ * Update current authenticated user basic fields (name, email, phone)
+ */
+export const updateMe = async (
+  token: string,
+  payload: {
+    full_name?: string | null;
+    email?: string | null;
+    phone_number?: string | null;
+  }
+): Promise<{ success: boolean; message: string; data?: { user?: any } }> => {
+  try {
+    console.log(
+      "[API Debug] updateMe: Sending request to",
+      `${BACKEND_URL}/api/v1/users/me`
+    );
+
+    const response = await fetch(`${BACKEND_URL}/api/v1/users/me`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Update failed with status ${response.status}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      } catch {}
+      console.error("[API Error] updateMe:", errorMessage);
+      return { success: false, message: errorMessage };
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      return {
+        success: true,
+        message: result.message || "Updated",
+        data: result.data,
+      };
+    }
+
+    return { success: false, message: result.message || "Update failed" };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("[API Error] updateMe:", error);
+    return { success: false, message: `Network error: ${errorMessage}` };
+  }
+};
+
+/**
+ * Logout current user by clearing local storage
+ * @returns Success message
+ */
+export const logout = (): { success: boolean; message: string } => {
+  try {
+    console.log("[API Debug] logout: Clearing local storage");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    console.log("[API Success] logout: User logged out successfully");
+    return {
+      success: true,
+      message: "Logout berhasil",
+    };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("[API Error] logout:", error);
+    return {
+      success: false,
+      message: `Logout gagal: ${errorMessage}`,
+    };
+  }
+};

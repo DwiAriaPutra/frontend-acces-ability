@@ -58,7 +58,9 @@ function GoogleCallbackContent() {
 
           const redirectPath = result.data.user.role === 'provider' 
             ? '/dashboard/provider' 
-            : '/dashboard/user';
+            : result.data.user.role === 'admin'
+              ? '/dashboard/admin'
+              : '/dashboard/user';
 
           // Redirect to dashboard after short delay
           setTimeout(() => {

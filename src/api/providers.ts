@@ -5,7 +5,13 @@ Dependensi: types.ts
 Main Functions: getProviders.
 */
 
-import { Provider, ApiResponse, PaginatedProviders } from "./types";
+import {
+  Provider,
+  ApiResponse,
+  PaginatedProviders,
+  UpdateMyProviderPayload,
+  ProviderCertificationItem,
+} from "./types";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
@@ -25,6 +31,7 @@ export const getProviders = async (params?: {
   maxPrice?: number;
   limit?: number;
   page?: number;
+  verifiedOnly?: boolean;
 }): Promise<Provider[] | PaginatedProviders> => {
   try {
     const baseUrl = BACKEND_URL.endsWith("/")
@@ -51,6 +58,9 @@ export const getProviders = async (params?: {
     }
     if (params?.maxPrice !== undefined) {
       queryParams.append("max_price", params.maxPrice.toString());
+    }
+    if (params?.verifiedOnly !== undefined) {
+      queryParams.append("verified_only", String(params.verifiedOnly));
     }
     if (params?.limit) queryParams.append("limit", params.limit.toString());
     if (params?.page) queryParams.append("page", params.page.toString());
@@ -156,6 +166,379 @@ export const getProviderDetail = async (
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
     console.error("[API Error] getProviderDetail:", errorMessage);
+    return null;
+  }
+};
+
+export const getMyProvider = async (
+  token: string
+): Promise<Provider | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/profile`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[API Error] getMyProvider (${response.status}):`,
+        errorText.substring(0, 200)
+      );
+      return null;
+    }
+
+    const result: ApiResponse<{ provider?: Provider }> = await response.json();
+
+    if (result.success) {
+      return result.data?.provider || null;
+    }
+
+    console.error("[API Error] getMyProvider: Invalid response format", result);
+    return null;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("[API Error] getMyProvider:", errorMessage);
+    return null;
+  }
+};
+
+export const updateMyProvider = async (
+  token: string,
+  payload: UpdateMyProviderPayload
+): Promise<Provider | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/profile`;
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[API Error] updateMyProvider (${response.status}):`,
+        errorText.substring(0, 200)
+      );
+      return null;
+    }
+
+    const result: ApiResponse<{ provider?: Provider }> = await response.json();
+
+    if (result.success) {
+      return result.data?.provider || null;
+    }
+
+    console.error(
+      "[API Error] updateMyProvider: Invalid response format",
+      result
+    );
+    return null;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    console.error("[API Error] updateMyProvider:", errorMessage);
+    return null;
+  }
+};
+
+export const getMyProviderCertificates = async (
+  token: string
+): Promise<ProviderCertificationItem[]> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/certifications`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const result: ApiResponse<{
+      certifications?: ProviderCertificationItem[];
+    }> = await response.json();
+
+    if (result.success) {
+      return result.data?.certifications || [];
+    }
+
+    return [];
+  } catch (error) {
+    console.error("[API Error] getMyProviderCertificates:", error);
+    return [];
+  }
+};
+
+export const addMyProviderCertificate = async (
+  token: string,
+  file: File
+): Promise<boolean> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/certifications`;
+    const formData = new FormData();
+    formData.append("provider_certificate", file);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("[API Error] addMyProviderCertificate:", error);
+    return false;
+  }
+};
+
+export const deleteMyProviderCertificate = async (
+  token: string,
+  certificationId: string
+): Promise<boolean> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/certifications/${certificationId}`;
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("[API Error] deleteMyProviderCertificate:", error);
+    return false;
+  }
+};
+
+export const addMySpecializations = async (
+  token: string,
+  serviceTypeIds: number[]
+): Promise<boolean> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/specializations`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ service_type_ids: serviceTypeIds }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("[API Error] addMySpecializations:", error);
+    return false;
+  }
+};
+
+export const deleteMySpecializationByServiceType = async (
+  token: string,
+  serviceTypeId: number
+): Promise<boolean> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+
+    const url = `${baseUrl}/api/v1/providers/me/specializations/${serviceTypeId}`;
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("[API Error] deleteMySpecializationByServiceType:", error);
+    return false;
+  }
+};
+
+export const createMyAvailability = async (
+  token: string,
+  payload: {
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_active?: boolean;
+  }
+): Promise<any | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+    const url = `${baseUrl}/api/v1/providers/me/availabilities`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) return null;
+
+    const result: ApiResponse<{ availability?: any }> = await response.json();
+    if (result.success) return result.data?.availability || null;
+    return null;
+  } catch (error) {
+    console.error("[API Error] createMyAvailability:", error);
+    return null;
+  }
+};
+
+export const updateMyAvailability = async (
+  token: string,
+  availabilityId: string,
+  payload: {
+    day_of_week?: number;
+    start_time?: string;
+    end_time?: string;
+    is_active?: boolean;
+  }
+): Promise<any | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+    const url = `${baseUrl}/api/v1/providers/me/availabilities/${availabilityId}`;
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) return null;
+
+    const result: ApiResponse<{ availability?: any }> = await response.json();
+    if (result.success) return result.data?.availability || null;
+    return null;
+  } catch (error) {
+    console.error("[API Error] updateMyAvailability:", error);
+    return null;
+  }
+};
+
+export const deleteMyAvailability = async (
+  token: string,
+  availabilityId: string
+): Promise<boolean> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+    const url = `${baseUrl}/api/v1/providers/me/availabilities/${availabilityId}`;
+
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error("[API Error] deleteMyAvailability:", error);
+    return false;
+  }
+};
+
+export const verifyProvider = async (
+  token: string,
+  providerId: string,
+  verificationStatus: "approved" | "rejected"
+): Promise<Provider | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+    const url = `${baseUrl}/api/v1/providers/${providerId}/verification`;
+
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ verification_status: verificationStatus }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[API Error] verifyProvider (${response.status}):`,
+        errorText.substring(0, 200)
+      );
+      return null;
+    }
+
+    const result: ApiResponse<{ provider?: Provider }> = await response.json();
+
+    if (result.success) {
+      return result.data?.provider || null;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[API Error] verifyProvider:", error);
     return null;
   }
 };
