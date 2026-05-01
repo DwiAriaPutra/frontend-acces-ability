@@ -1,7 +1,34 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('accessToken');
+
+    if (user && token) {
+      try {
+        const parsedUser = JSON.parse(user);
+        // Redirect based on user role
+        if (parsedUser.role === 'provider') {
+          router.push('/dashboard/provider');
+        } else if (parsedUser.role === 'admin') {
+          router.push('/dashboard/admin');
+        } else {
+          router.push('/dashboard/user');
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, [router]);
+
   return (
     <>
       {/* BEGIN: HeroSection */}

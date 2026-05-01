@@ -10,7 +10,7 @@ Main Functions: BookingOrderPage.
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   BookingCreatePayload,
   Provider,
@@ -94,8 +94,14 @@ const getNextDateForDay = (dayOfWeek: number) => {
 
 export default function BookingOrderPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const providerId = searchParams.get("providerId") || "";
+  const [providerId, setProviderId] = useState("");
+  const [isProviderIdReady, setIsProviderIdReady] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setProviderId(params.get("providerId") || "");
+    setIsProviderIdReady(true);
+  }, []);
 
   const [provider, setProvider] = useState<Provider | null>(null);
   const [globalServiceTypes, setGlobalServiceTypes] = useState<ServiceTypeOption[]>([]);
@@ -113,12 +119,17 @@ export default function BookingOrderPage() {
 
   useEffect(() => {
     const fetchProvider = async () => {
+      if (!isProviderIdReady) {
+        return;
+      }
+
       if (!providerId) {
         setErrorMessage("providerId tidak ditemukan di URL");
         setIsLoading(false);
         return;
       }
 
+      setErrorMessage(null);
       setIsLoading(true);
       const data = await getProviderDetail(providerId);
       setProvider(data);
@@ -151,7 +162,7 @@ export default function BookingOrderPage() {
     };
 
     fetchProvider();
-  }, [providerId]);
+  }, [providerId, isProviderIdReady]);
 
   const providerName = useMemo(
     () => provider?.user?.full_name || provider?.full_name || "Provider",

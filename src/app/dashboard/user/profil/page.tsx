@@ -9,10 +9,12 @@ Status: Active.
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getUserBookings } from "@/api";
+import { useRouter } from "next/navigation";
+import { getUserBookings, logout } from "@/api";
 import type { Booking } from "@/api";
 
 export default function ProfilPage() {
+  const router = useRouter();
   const [user, setUser] = useState({
     full_name: "",
     email: "",
@@ -77,6 +79,13 @@ export default function ProfilPage() {
       .join("")
       .toUpperCase()
       .substring(0, 2);
+  };
+
+  const handleLogout = () => {
+    const result = logout();
+    if (result.success) {
+      router.push("/");
+    }
   };
 
   if (isLoading) {
@@ -194,6 +203,14 @@ export default function ProfilPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-green-700/60 font-medium">Role</span>
                   <span className="text-green-700 font-bold capitalize">{user.role}</span>
+                </div>
+                <div className="pt-4 border-t border-green-200">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 bg-red-500 text-white rounded-lg font-medium text-sm hover:bg-red-600 transition-all active:scale-95"
+                  >
+                    Keluar
+                  </button>
                 </div>
               </div>
             </div>

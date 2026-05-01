@@ -83,6 +83,8 @@ export default function LoginPage() {
       
       if (result.data.user.role === 'provider') {
         window.location.href = '/dashboard/provider';
+      } else if (result.data.user.role === 'admin') {
+        window.location.href = '/dashboard/admin';
       } else {
         window.location.href = '/dashboard/user';
       }
