@@ -54,7 +54,7 @@ const Header = () => {
           <img
             alt="ACCESS-ABILITY Logo"
             className="h-10 w-auto"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpjustQnD2e9tpWYOrpyCwIiXwMU_wPvPo2qsW7T-Ak1qY3nktzDaszSCMaQKblkjzzljyzkKzwFcHN4bE8EWGOSZsaPtIVf20zaHgluhar6idN5z97gCK086HyLquBVxcWxSO0GxdfbYik6JI9vduqo-1wc8oK45MP-rNSI9sCDkxlHyivIkCb_P1PJaRKsmuXiA7ojTe5VrHXlCGjDBsw54C-2H3kT1NWwI5JQwFoLQ4UhPziw6183FemJkrw60LJ2chW8qJmz4"
+            src="/images/logo.svg"
           />
           <span className="ml-2 font-bold text-green-700 text-xs tracking-tight uppercase">ACCESS-ABILITY</span>
         </Link>

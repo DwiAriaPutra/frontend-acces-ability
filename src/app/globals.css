@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
-  --color-brand-green: #4CAF50;
+  --color-brand-green: #4caf50;
   --color-brand-green-hover: #45a049;
-  
+
   --font-inter: "Inter", sans-serif;
 }
 
@@ -26,13 +27,22 @@ body {
 }
 
 .hero-gradient {
-  background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuBpjustQnD2e9tpWYOrpyCwIiXwMU_wPvPo2qsW7T-Ak1qY3nktzDaszSCMaQKblkjzzljyzkKzwFcHN4bE8EWGOSZsaPtIVf20zaHgluhar6idN5z97gCK086HyLquBVxcWxSO0GxdfbYik6JI9vduqo-1wc8oK45MP-rNSI9sCDkxlHyivIkCb_P1PJaRKsmuXiA7ojTe5VrHXlCGjDBsw54C-2H3kT1NWwI5JQwFoLQ4UhPziw6183FemJkrw60LJ2chW8qJmz4');
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0.6)
+    ),
+    url("/images/hero-bg.svg");
   background-size: cover;
   background-position: center top;
 }
 
 .cta-bg {
-  background: linear-gradient(90deg, rgba(74, 163, 79, 0.9) 0%, rgba(74, 163, 79, 0.7) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuBpjustQnD2e9tpWYOrpyCwIiXwMU_wPvPo2qsW7T-Ak1qY3nktzDaszSCMaQKblkjzzljyzkKzwFcHN4bE8EWGOSZsaPtIVf20zaHgluhar6idN5z97gCK086HyLquBVxcWxSO0GxdfbYik6JI9vduqo-1wc8oK45MP-rNSI9sCDkxlHyivIkCb_P1PJaRKsmuXiA7ojTe5VrHXlCGjDBsw54C-2H3kT1NWwI5JQwFoLQ4UhPziw6183FemJkrw60LJ2chW8qJmz4');
+  background: linear-gradient(
+      90deg,
+      rgba(74, 163, 79, 0.9) 0%,
+      rgba(74, 163, 79, 0.7) 100%
+    ),
+    url("/images/hero-bg.svg");
   background-size: cover;
   background-position: center 60%;
 }

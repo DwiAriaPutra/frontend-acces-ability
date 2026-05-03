@@ -10,7 +10,7 @@ const Footer = () => {
             <img
               alt="Footer Logo"
               className="h-10 w-auto brightness-200"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKYs6PGbOguS-MVZjR3X4xb_bLvNAmg-23IU_-HKwAxUI2EYIyz-My3B_zHT93TKiv5P_-SBF9-e31uIuiNs2sOLeFkRUJaDldlsgxUrv43yVTrn-ehjF1NKYxyw8w4j4rFs7akwS1-yJHWMSovf_jFxIa2X0dwkSbhI9weqzD48uTsErmUdJ1HdIAdzPZEohXLmNTZFUmFQKDxCZ51SAwl9XWlmJs2afr8NhwOH5x2zmG4Rxb-DWovv80_F37BsH0UuugtuKhD_s"
+              src="/images/logo.svg"
             />
             <span className="ml-2 font-bold text-white text-xs tracking-tight uppercase">ACCESS-ABILITY</span>
           </div>

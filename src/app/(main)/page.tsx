@@ -33,27 +33,41 @@ export default function Home() {
     <>
       {/* BEGIN: HeroSection */}
       <section className="relative pt-20">
-        <div className="hero-gradient min-h-[600px] flex flex-col items-center justify-center text-center px-4 py-20">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 max-w-4xl leading-tight">
-            Hubungkan Pengguna dengan Pendamping Disabilitas Profesional
-          </h1>
-          <p className="mt-6 text-gray-700 max-w-2xl text-lg italic">
-            Temukan bantuan komunikasi bahasa isyarat, pendampingan mobilitas, dan layanan terapi profesional yang dirancang untuk mendukung kemandirian Anda.
-          </p>
-          {/* Search Bar */}
-          <div className="mt-10 w-full max-w-2xl bg-white p-2 rounded-lg shadow-lg flex items-center">
-            <div className="flex-grow flex items-center px-4">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-              </svg>
-              <input className="w-full border-none focus:ring-0 text-sm outline-none" placeholder="Cari layanan..." type="text" />
+        <div 
+          className="relative min-h-[600px] flex flex-col items-center justify-center text-center px-4 py-20"
+          style={{
+            backgroundImage: 'url(/images/hero-bg.svg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          {/* Background overlay for better text contrast */}
+          <div className="absolute inset-0 bg-black/30 z-0"></div>
+          <div className="relative z-10 w-full flex flex-col items-center justify-center">
+            <h1 className="text-3xl md:text-5xl font-bold text-black max-w-4xl leading-tight">
+              Hubungkan Pengguna dengan Pendamping Disabilitas Profesional
+            </h1>
+            <p className="mt-6 text-black max-w-2xl text-lg italic">
+              Temukan bantuan komunikasi bahasa isyarat, pendampingan mobilitas, dan layanan terapi profesional yang dirancang untuk mendukung kemandirian Anda.
+            </p>
+            {/* Search Bar */}
+            <div className="mt-10 w-full px-4 flex justify-center">
+              <div className="w-full max-w-2xl bg-white p-2 rounded-lg shadow-lg flex items-center">
+              <div className="flex-grow flex items-center px-4">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+                </svg>
+                <input className="w-full border-none focus:ring-0 text-sm outline-none" placeholder="Cari layanan..." type="text" />
+              </div>
+              <button className="bg-brand-green text-white px-8 py-2 rounded-md font-medium hover:bg-brand-green-hover transition">Cari</button>
             </div>
-            <button className="bg-brand-green text-white px-8 py-2 rounded-md font-medium hover:bg-brand-green-hover transition">Cari</button>
-          </div>
-          {/* Action Buttons */}
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <button className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Cari Pendamping</button>
-            <Link href="/register-provider" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Daftar Sebagai Provider</Link>
+            </div>
+            {/* Action Buttons */}
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Link href="/login" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Cari Pendamping</Link>
+              <Link href="/register-provider" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Daftar Sebagai Provider</Link>
+            </div>
           </div>
         </div>
       </section>
