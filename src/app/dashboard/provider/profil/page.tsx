@@ -35,6 +35,10 @@ import {
   logout,
   updateMeMultipart,
 } from "@/api";
+import {
+  getCertificationStatusLabel,
+  normalizeCertificationStatus,
+} from "@/utils/certification";
 
 type ProviderProfileFormState = {
   bio: string;
@@ -876,7 +880,17 @@ export default function ProfileProviderPage() {
                         <div>
                           <p className="text-sm font-semibold text-gray-800">Sertifikat</p>
                           <p className="text-xs text-gray-500 break-all">{certification.file_url || "-"}</p>
-                          <p className="text-xs text-gray-400 mt-1">Status: {certification.verification_status || "-"}</p>
+                          <p
+                            className={`text-xs mt-1 font-semibold ${
+                              normalizeCertificationStatus(certification) === "approved"
+                                ? "text-green-600"
+                                : normalizeCertificationStatus(certification) === "rejected"
+                                  ? "text-rose-600"
+                                  : "text-amber-600"
+                            }`}
+                          >
+                            Status: {getCertificationStatusLabel(normalizeCertificationStatus(certification))}
+                          </p>
                         </div>
                         <button
                           type="button"

@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import CertPreviewModal from "@/components/CertPreviewModal";
-import { getProviderDetail, getProviders, verifyProvider } from "@/api";
+import {
+  getProviderDetail,
+  getProviders,
+  verifyCertification,
+  verifyProvider,
+} from "@/api";
 import type { Provider } from "@/api";
 
 type ProviderStatus = "pending" | "approved" | "rejected";
@@ -13,6 +18,7 @@ type VerificationAction = "approved" | "rejected";
 type ProviderCertificate = {
   id: string;
   file_url?: string;
+  is_verified?: boolean;
   verification_status?: string;
   created_at?: string;
   updated_at?: string;
@@ -54,6 +60,19 @@ const normalizeStatus = (value?: string | null): ProviderStatus => {
   const normalized = (value || "pending").toLowerCase();
   if (normalized === "approved" || normalized === "rejected") {
     return normalized;
+  }
+
+  return "pending";
+};
+
+const normalizeCertificationStatus = (certification?: ProviderCertificate | null) => {
+  const normalized = (certification?.verification_status || "pending").toLowerCase();
+  if (normalized === "approved" || normalized === "rejected") {
+    return normalized;
+  }
+
+  if (certification?.is_verified) {
+    return "approved";
   }
 
   return "pending";
@@ -159,7 +178,7 @@ export default function ProviderVerificationPage() {
   const [unauthorized, setUnauthorized] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
-  const [selectedProviderDetail, setSelectedProviderDetail] = useState<Provider | null>(null);
+  const [selectedProviderDetail, setSelectedProviderDetail] = useState<ProviderWithCertificates | null>(null);
   const [listLoading, setListLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -168,6 +187,11 @@ export default function ProviderVerificationPage() {
   const [detailMessage, setDetailMessage] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState<VerificationAction | null>(null);
+  const [certActionBusy, setCertActionBusy] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    certId: string;
+    isVerifying: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -372,6 +396,42 @@ export default function ProviderVerificationPage() {
     }
   };
 
+  const refreshSelectedCertificationStatus = async (
+    certificationId: string,
+    isVerified: boolean
+  ) => {
+    setSelectedProviderDetail((currentDetail) => {
+      if (!currentDetail) return currentDetail;
+
+      const pwc = currentDetail as ProviderWithCertificates;
+      const updatedCert = {
+        is_verified: isVerified,
+        verification_status: isVerified ? "approved" : "rejected",
+      };
+
+      // Update whichever array contains the certification
+      const result: ProviderWithCertificates = { ...currentDetail };
+
+      if (pwc.certifications) {
+        result.certifications = pwc.certifications.map((cert) =>
+          cert.id === certificationId ? { ...cert, ...updatedCert } : cert
+        );
+      }
+      if (pwc.provider_certifications) {
+        result.provider_certifications = pwc.provider_certifications.map((cert) =>
+          cert.id === certificationId ? { ...cert, ...updatedCert } : cert
+        );
+      }
+      if (pwc.certification_items) {
+        result.certification_items = pwc.certification_items.map((cert) =>
+          cert.id === certificationId ? { ...cert, ...updatedCert } : cert
+        );
+      }
+
+      return result;
+    });
+  };
+
   const handleVerification = async (verificationStatus: VerificationAction) => {
     const token = localStorage.getItem("accessToken");
 
@@ -420,6 +480,56 @@ export default function ProviderVerificationPage() {
       setActionMessage("Terjadi kesalahan saat memproses verifikasi provider.");
     } finally {
       setActionBusy(null);
+    }
+  };
+
+  const handleCertificationVerification = async (
+    certificationId: string,
+    isVerified: boolean
+  ) => {
+    setConfirmDialog({
+      certId: certificationId,
+      isVerifying: isVerified,
+    });
+  };
+
+  const handleConfirmCertification = async () => {
+    if (!confirmDialog) return;
+
+    const { certId, isVerifying } = confirmDialog;
+    const token = localStorage.getItem("accessToken");
+
+    if (!token || !selectedProviderId) {
+      setActionMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
+      setConfirmDialog(null);
+      return;
+    }
+
+    setCertActionBusy(certId);
+    setActionMessage(null);
+    setConfirmDialog(null);
+
+    try {
+      const updatedCertification = await verifyCertification(
+        token,
+        certId,
+        isVerifying
+      );
+
+      if (!updatedCertification) {
+        setActionMessage("Gagal memperbarui status verifikasi sertifikasi.");
+        return;
+      }
+
+      await refreshSelectedCertificationStatus(certId, isVerifying);
+      setActionMessage(
+        `Sertifikasi berhasil ${isVerifying ? "disetujui" : "ditolak"}.`
+      );
+    } catch (error) {
+      console.error("[Admin Verification] Certification verification failed", error);
+      setActionMessage("Terjadi kesalahan saat memproses verifikasi sertifikasi.");
+    } finally {
+      setCertActionBusy(null);
     }
   };
 
@@ -542,8 +652,23 @@ export default function ProviderVerificationPage() {
         ) : null}
 
         {actionMessage ? (
-          <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-            {actionMessage}
+          <div
+            className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm ${
+              actionMessage.toLowerCase().includes("gagal") ||
+              actionMessage.toLowerCase().includes("terjadi") ||
+              actionMessage.toLowerCase().includes("sesi")
+                ? "border-rose-100 bg-rose-50 text-rose-700"
+                : "border-emerald-100 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            <span className="material-symbols-outlined mt-0.5 text-base">
+              {actionMessage.toLowerCase().includes("gagal") ||
+              actionMessage.toLowerCase().includes("terjadi") ||
+              actionMessage.toLowerCase().includes("sesi")
+                ? "error"
+                : "check_circle"}
+            </span>
+            <p>{actionMessage}</p>
           </div>
         ) : null}
       </section>
@@ -729,6 +854,95 @@ export default function ProviderVerificationPage() {
                   </div>
                 ) : null}
 
+                <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-bold text-gray-900">Sertifikasi</h3>
+                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                      {activeCertifications.length} sertifikat
+                    </span>
+                  </div>
+
+                  {activeCertifications.length === 0 ? (
+                    <div className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
+                      Belum ada sertifikasi yang diunggah provider.
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {activeCertifications.map((certification) => {
+                        const certStatus = normalizeCertificationStatus(certification);
+                        const certBusy = certActionBusy === certification.id;
+
+                        return (
+                          <div
+                            key={certification.id}
+                            className="rounded-3xl border border-gray-100 bg-gray-50 p-4"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">
+                                  Sertifikat {certification.id.slice(0, 8)}
+                                </p>
+                                <p className="mt-1 text-xs text-gray-500">
+                                  {certification.created_at || "Tanggal upload tidak tersedia"}
+                                </p>
+                              </div>
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                                  certStatus === "approved"
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : certStatus === "rejected"
+                                      ? "bg-rose-50 text-rose-700"
+                                      : "bg-amber-50 text-amber-700"
+                                }`}
+                              >
+                                {certStatus}
+                              </span>
+                            </div>
+
+                            {certification.file_url ? (
+                              <a
+                                href={certification.file_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-4 block overflow-hidden rounded-2xl border border-gray-200 bg-white"
+                              >
+                                <img
+                                  src={certification.file_url}
+                                  alt="Sertifikasi provider"
+                                  className="h-48 w-full object-cover"
+                                />
+                              </a>
+                            ) : (
+                              <div className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
+                                File sertifikat tidak tersedia.
+                              </div>
+                            )}
+
+                            <div className="mt-4 flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void handleCertificationVerification(certification.id, true)}
+                                disabled={certBusy || certStatus !== "pending"}
+                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {certBusy ? "Memproses..." : "Verify"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void handleCertificationVerification(certification.id, false)}
+                                disabled={certBusy || certStatus !== "pending"}
+                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                   <div className="rounded-2xl bg-gray-50 p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -845,6 +1059,65 @@ export default function ProviderVerificationPage() {
           ) : null}
         </div>
       </section>
+
+      {/* Confirmation Modal */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white shadow-xl">
+            {/* Header */}
+            <div className="border-b border-gray-200 px-6 py-4">
+              <h2 className="text-lg font-bold text-gray-900">
+                {confirmDialog.isVerifying ? "Setujui Sertifikasi" : "Tolak Sertifikasi"}
+              </h2>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-6">
+              <div className="mb-4 flex items-center justify-center">
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-full ${
+                    confirmDialog.isVerifying
+                      ? "bg-emerald-100 text-emerald-600"
+                      : "bg-amber-100 text-amber-600"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-3xl">
+                    {confirmDialog.isVerifying ? "check_circle" : "warning"}
+                  </span>
+                </div>
+              </div>
+              <p className="text-center text-gray-600">
+                {confirmDialog.isVerifying
+                  ? "Apakah Anda yakin ingin menyetujui sertifikasi ini?"
+                  : "Apakah Anda yakin ingin menolak sertifikasi ini?"}
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 font-semibold text-gray-700 transition-all hover:bg-gray-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleConfirmCertification()}
+                disabled={certActionBusy === confirmDialog.certId}
+                className={`flex-1 rounded-xl px-4 py-2.5 font-semibold text-white transition-all ${
+                  confirmDialog.isVerifying
+                    ? "bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
+                    : "bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400"
+                } disabled:cursor-not-allowed`}
+              >
+                {certActionBusy === confirmDialog.certId ? "Memproses..." : "Konfirmasi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

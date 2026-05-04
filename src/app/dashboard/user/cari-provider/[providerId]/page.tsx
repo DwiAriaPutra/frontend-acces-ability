@@ -1,9 +1,18 @@
+/*
+Header: Provider Detail Page
+Tujuan: Menampilkan detail provider sebelum booking, termasuk status sertifikasi yang dinormalisasi.
+*/
+
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProviderDetail, getProviderReviews } from "@/api";
 import CertPreviewModal from "@/components/CertPreviewModal";
 import ReviewList from "@/components/ReviewList";
+import {
+  getCertificationStatusLabel,
+  normalizeCertificationStatus,
+} from "@/utils/certification";
 
 type ProviderDetailPageProps = {
   params: Promise<{
@@ -54,6 +63,32 @@ export default async function ProviderDetailPage({ params }: ProviderDetailPageP
     (provider.specializations as Specialization[] | undefined)
       ?.map((item) => item?.serviceType?.name)
       .filter((name): name is string => Boolean(name)) || [];
+
+  const certifications =
+    (
+      ((provider as unknown) as {
+        certifications?: unknown[];
+        provider_certifications?: unknown[];
+        certification_items?: unknown[];
+      }).certifications ||
+      ((provider as unknown) as {
+        certifications?: unknown[];
+        provider_certifications?: unknown[];
+        certification_items?: unknown[];
+      }).provider_certifications ||
+      ((provider as unknown) as {
+        certifications?: unknown[];
+        provider_certifications?: unknown[];
+        certification_items?: unknown[];
+      }).certification_items ||
+      []
+    ) as Array<{
+      id: string;
+      file_url?: string;
+      verification_status?: string;
+      is_verified?: boolean;
+      created_at?: string;
+    }>;
 
   return (
     <div className="p-8 max-w-[1200px] mx-auto space-y-8">
@@ -147,30 +182,35 @@ export default async function ProviderDetailPage({ params }: ProviderDetailPageP
 
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="text-xl font-bold text-gray-900">Sertifikasi & Kualifikasi</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {certifications.length > 0 ? (
+                certifications.map((certification) => {
+                  const status = normalizeCertificationStatus(certification);
+
+                  return (
+                    <span
+                      key={certification.id}
+                      className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+                        status === "approved"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : status === "rejected"
+                            ? "bg-rose-50 text-rose-700"
+                            : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {getCertificationStatusLabel(status)}
+                    </span>
+                  );
+                })
+              ) : (
+                <span className="text-sm text-gray-500">Belum ada sertifikat yang terdaftar.</span>
+              )}
+            </div>
             <div className="mt-4">
               {/* render client-side modal component for previews */}
               <CertPreviewModal
                 // normalize possible shapes to a single array
-                certifications={
-                  (
-                    ((provider as unknown) as {
-                      certifications?: unknown[];
-                      provider_certifications?: unknown[];
-                      certification_items?: unknown[];
-                    }).certifications ||
-                    ((provider as unknown) as {
-                      certifications?: unknown[];
-                      provider_certifications?: unknown[];
-                      certification_items?: unknown[];
-                    }).provider_certifications ||
-                    ((provider as unknown) as {
-                      certifications?: unknown[];
-                      provider_certifications?: unknown[];
-                      certification_items?: unknown[];
-                    }).certification_items ||
-                    []
-                  ) as any
-                }
+                certifications={certifications as any}
               />
             </div>
           </div>

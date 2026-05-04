@@ -1,11 +1,21 @@
+/*
+Header: Certification Preview Modal
+Tujuan: Menampilkan daftar sertifikat provider beserta status verifikasi yang konsisten.
+*/
+
 "use client";
 
 import React, { useState } from "react";
+import {
+  getCertificationStatusLabel,
+  normalizeCertificationStatus,
+} from "@/utils/certification";
 
 type CertItem = {
   id: string;
   file_url?: string;
   verification_status?: string;
+  is_verified?: boolean;
   created_at?: string;
 };
 
@@ -44,8 +54,16 @@ export default function CertPreviewModal({
                 </div>
               </div>
               <div className="text-right flex items-center gap-3">
-                <div className={`text-sm font-semibold ${c.verification_status === 'verified' || c.verification_status === 'approved' ? 'text-green-600' : 'text-gray-600'}`}>
-                  {c.verification_status || 'Belum Diverifikasi'}
+                <div
+                  className={`text-sm font-semibold ${
+                    normalizeCertificationStatus(c) === "approved"
+                      ? "text-green-600"
+                      : normalizeCertificationStatus(c) === "rejected"
+                        ? "text-rose-600"
+                        : "text-amber-600"
+                  }`}
+                >
+                  {getCertificationStatusLabel(normalizeCertificationStatus(c))}
                 </div>
                 {c.file_url ? (
                   <button onClick={() => handleOpen(c)} className="text-xs text-green-600 underline">Pratinjau</button>

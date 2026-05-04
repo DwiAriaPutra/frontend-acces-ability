@@ -542,3 +542,46 @@ export const verifyProvider = async (
     return null;
   }
 };
+
+export const verifyCertification = async (
+  token: string,
+  certificationId: string,
+  isVerified: boolean
+): Promise<ProviderCertificationItem | null> => {
+  try {
+    const baseUrl = BACKEND_URL.endsWith("/")
+      ? BACKEND_URL.slice(0, -1)
+      : BACKEND_URL;
+    const url = `${baseUrl}/api/v1/providers/certifications/${certificationId}/verification`;
+
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ is_verified: isVerified }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[API Error] verifyCertification (${response.status}):`,
+        errorText.substring(0, 200)
+      );
+      return null;
+    }
+
+    const result: ApiResponse<{ certification?: ProviderCertificationItem }> =
+      await response.json();
+
+    if (result.success) {
+      return result.data?.certification || null;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[API Error] verifyCertification:", error);
+    return null;
+  }
+};

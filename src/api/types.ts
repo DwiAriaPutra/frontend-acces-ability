@@ -167,6 +167,7 @@ export interface ProviderCertificationItem {
   id: string;
   provider_profile_id: string;
   file_url?: string;
+  is_verified?: boolean;
   verification_status?: string;
   created_at?: string;
   updated_at?: string;
