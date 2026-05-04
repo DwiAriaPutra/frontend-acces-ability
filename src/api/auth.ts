@@ -505,6 +505,68 @@ export const updateMe = async (
 };
 
 /**
+ * Update current authenticated user including profile image using multipart/form-data
+ * @param token - Bearer token
+ * @param options - Object containing optional File `profile_image` and other json fields
+ */
+export const updateMeMultipart = async (
+  token: string,
+  options: { profile_image?: File; fields?: { [key: string]: any } } = {}
+): Promise<{ success: boolean; message: string; data?: { user?: any } }> => {
+  try {
+    const formData = new FormData();
+
+    if (options.fields) {
+      Object.keys(options.fields).forEach((k) => {
+        const v = options.fields![k];
+        if (v === null || typeof v === "undefined") return;
+        formData.append(k, String(v));
+      });
+    }
+
+    if (options.profile_image) {
+      formData.append("profile_image", options.profile_image);
+    }
+
+    const response = await fetch(`${BACKEND_URL}/api/v1/users/me`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Update failed with status ${response.status}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      } catch {}
+      console.error("[API Error] updateMeMultipart:", errorMessage);
+      return { success: false, message: errorMessage };
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      return {
+        success: true,
+        message: result.message || "Updated",
+        data: result.data,
+      };
+    }
+
+    return { success: false, message: result.message || "Update failed" };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("[API Error] updateMeMultipart:", error);
+    return { success: false, message: `Network error: ${errorMessage}` };
+  }
+};
+
+/**
  * Logout current user by clearing local storage
  * @returns Success message
  */

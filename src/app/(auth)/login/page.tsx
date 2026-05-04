@@ -80,9 +80,22 @@ export default function LoginPage() {
         ...result.data.user,
         providerProfile: result.data.providerProfile
       }));
-      
+
+      // If provider, only redirect to provider dashboard when verified.
       if (result.data.user.role === 'provider') {
-        window.location.href = '/dashboard/provider';
+        const isVerified = !!result.data.providerProfile?.is_verified;
+        if (isVerified) {
+          window.location.href = '/dashboard/provider';
+        } else {
+          // Show error notification to unverified provider
+          setError('Akun Anda masih menunggu persetujuan dari admin. Silakan hubungi support atau coba kembali nanti.');
+          setIsSubmitting(false);
+          // Redirect to landing page after 3 seconds
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000);
+          return;
+        }
       } else if (result.data.user.role === 'admin') {
         window.location.href = '/dashboard/admin';
       } else {

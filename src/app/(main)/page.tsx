@@ -15,9 +15,18 @@ export default function Home() {
     if (user && token) {
       try {
         const parsedUser = JSON.parse(user);
-        // Redirect based on user role
+        // Redirect based on user role and verification status for providers
         if (parsedUser.role === 'provider') {
-          router.push('/dashboard/provider');
+          const isVerified = !!(
+            parsedUser?.providerProfile?.verification_status === 'verified' ||
+            parsedUser?.verification_status === 'verified'
+          );
+          if (isVerified) {
+            router.push('/dashboard/provider');
+          } else {
+            // Keep provider who is not yet verified on landing page
+            return;
+          }
         } else if (parsedUser.role === 'admin') {
           router.push('/dashboard/admin');
         } else {

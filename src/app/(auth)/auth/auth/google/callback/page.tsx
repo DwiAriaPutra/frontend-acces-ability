@@ -56,11 +56,27 @@ function GoogleCallbackContent() {
           }));
           console.log('[GoogleCallback] Login successful, redirecting to dashboard');
 
-          const redirectPath = result.data.user.role === 'provider' 
-            ? '/dashboard/provider' 
-            : result.data.user.role === 'admin'
-              ? '/dashboard/admin'
-              : '/dashboard/user';
+          // Determine redirect path; only send providers to provider dashboard when verified
+          let redirectPath = '/';
+          if (result.data.user.role === 'provider') {
+            const isVerified = !!result.data.providerProfile?.is_verified;
+            if (isVerified) {
+              redirectPath = '/dashboard/provider';
+            } else {
+              // Show error message for unverified provider
+              setError('Akun Anda masih menunggu persetujuan dari admin. Silakan hubungi support atau coba kembali nanti.');
+              setIsLoading(false);
+              // Redirect to landing page after 3 seconds
+              setTimeout(() => {
+                router.push('/');
+              }, 3000);
+              return;
+            }
+          } else if (result.data.user.role === 'admin') {
+            redirectPath = '/dashboard/admin';
+          } else {
+            redirectPath = '/dashboard/user';
+          }
 
           // Redirect to dashboard after short delay
           setTimeout(() => {

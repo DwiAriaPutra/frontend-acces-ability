@@ -76,11 +76,13 @@ export interface RegisterSuccessResponse {
     email: string;
     role: string;
     image_url?: string;
+    verification_status?: string;
   };
   providerProfile?: {
     id: string;
     user_id: string;
     price_per_hour: number;
+    is_verified?: boolean;
     verification_status: string;
   };
 }

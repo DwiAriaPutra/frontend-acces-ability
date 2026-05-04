@@ -10,6 +10,8 @@ Side Effects: State management untuk form dan UI, call API functions saat submit
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import DragDropImageZone from '@/components/DragDropImageZone';
+import DragDropZone from '@/components/DragDropZone';
 import {
   Province,
   Regency,
@@ -164,8 +166,7 @@ export default function RegisterProviderPage() {
     }));
   };
 
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleProfileImageChange = (file: File) => {
     if (file) {
       setFormData((prev) => ({
         ...prev,
@@ -177,16 +178,27 @@ export default function RegisterProviderPage() {
         setProfilePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        profile_image: null,
+      }));
+      setProfilePreview('');
     }
   };
 
-  const handleCertificateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleCertificateChange = (file: File) => {
     if (file) {
       setCertificateFile(file);
       setFormData((prev) => ({
         ...prev,
         provider_certificate: file,
+      }));
+    } else {
+      setCertificateFile(null);
+      setFormData((prev) => ({
+        ...prev,
+        provider_certificate: null,
       }));
     }
   };
@@ -447,36 +459,12 @@ export default function RegisterProviderPage() {
               </div>
 
               {/* Profile Photo Upload */}
-              <div className="flex flex-col items-center mb-10">
-                <div className="relative">
-                  <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center border-4 border-white shadow-sm overflow-hidden">
-                    {profilePreview ? (
-                      <img
-                        src={profilePreview}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="material-symbols-outlined text-gray-300 text-5xl">
-                        person
-                      </span>
-                    )}
-                  </div>
-                  <label
-                    htmlFor="profile-input"
-                    className="absolute bottom-1 right-1 w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-lg">edit</span>
-                  </label>
-                  <input
-                    id="profile-input"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleProfileImageChange}
-                  />
-                </div>
-                <span className="mt-4 text-sm font-medium text-gray-500">Unggah Foto Profil</span>
+              <div className="mb-10">
+                <DragDropImageZone
+                  onImageSelected={handleProfileImageChange}
+                  preview={profilePreview}
+                  label="Unggah Foto Profil"
+                />
               </div>
 
               {/* Input Fields */}
@@ -736,30 +724,16 @@ export default function RegisterProviderPage() {
                   <label className="block text-sm font-semibold mb-4 text-gray-700">
                     Upload Sertifikat / Kualifikasi <span className="text-red-500">*</span>
                   </label>
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 p-10 flex flex-col items-center text-center hover:border-brand-green transition-colors">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-gray-100">
-                      <span className="material-symbols-outlined text-brand-green text-3xl">
-                        {certificateFile ? 'check_circle' : 'how_to_reg'}
-                      </span>
-                    </div>
-                    <p className="font-bold text-gray-900 mb-1">
-                      {certificateFile ? certificateFile.name : 'Upload Sertifikat / Kualifikasi'}
-                    </p>
-                    <p className="text-xs text-gray-400 mb-6">Format: PDF, JPG, PNG. Max 5MB</p>
-                    <label htmlFor="cert-input" className="cursor-pointer">
-                      <span className="bg-brand-green hover:bg-green-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 transition-all font-semibold shadow-md inline-flex">
-                        <span className="material-symbols-outlined text-sm">upload</span>
-                        Upload File
-                      </span>
-                    </label>
-                    <input
-                      id="cert-input"
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="hidden"
-                      onChange={handleCertificateChange}
-                    />
-                  </div>
+                  <DragDropZone
+                    onFileSelected={handleCertificateChange}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    maxSize={5 * 1024 * 1024}
+                    label="Upload Sertifikat / Kualifikasi"
+                    description="Format: PDF, JPG, PNG. Max 5MB"
+                    icon="how_to_reg"
+                    selectedFile={certificateFile}
+                    disabled={false}
+                  />
                 </div>
 
                 {/* Summary */}

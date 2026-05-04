@@ -9,6 +9,8 @@ Dependensi: @/api (locations, service-types, providers), localStorage user/token
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import DragDropZone from "@/components/DragDropZone";
+import DragDropImageZone from "@/components/DragDropImageZone";
 import {
   Booking,
   Provider,
@@ -31,6 +33,7 @@ import {
   getUserBookings,
   updateMyProvider,
   logout,
+  updateMeMultipart,
 } from "@/api";
 
 type ProviderProfileFormState = {
@@ -85,6 +88,9 @@ export default function ProfileProviderPage() {
   const [availabilities, setAvailabilities] = useState<any[]>([]);
   const [editingAvailabilityId, setEditingAvailabilityId] = useState<string | null>(null);
   const [newAvailability, setNewAvailability] = useState<{ day_of_week: number; start_time: string; end_time: string; is_active: boolean }>({ day_of_week: 1, start_time: "09:00", end_time: "17:00", is_active: true });
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string>("");
+  const [showImageUpload, setShowImageUpload] = useState(false);
 
   useEffect(() => {
     const loadReferenceData = async () => {
@@ -296,6 +302,21 @@ export default function ProfileProviderPage() {
     if (error) setError(null);
   };
 
+  const handleProfileImageSelected = (file: File) => {
+    if (file) {
+      setProfileImageFile(file);
+      // Generate preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setProfileImageFile(null);
+      setProfileImagePreview("");
+    }
+  };
+
   const handleProvinceChange = async (provinceId: string) => {
     const selectedProvince = provinces.find((province) => province.id === provinceId);
     setFormState((current) => ({
@@ -406,6 +427,7 @@ export default function ProfileProviderPage() {
                 role: newUser.role || profileUser?.role || "provider",
                 image_url: newUser.image_url || profileUser?.image_url || null,
               });
+              window.dispatchEvent(new Event("user-updated"));
             }
           } catch (e) {
             console.error("Error updating localStorage after user update", e);
@@ -492,6 +514,7 @@ export default function ProfileProviderPage() {
               providerProfile: refreshedProvider,
             })
           );
+          window.dispatchEvent(new Event("user-updated"));
         } catch (storageError) {
           console.error("Error updating localStorage user", storageError);
         }
@@ -548,71 +571,154 @@ export default function ProfileProviderPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
           <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-green-600 p-1 overflow-hidden shadow-lg bg-green-50 flex items-center justify-center">
-                {profileUser?.image_url || provider.profile_image_url || provider.image_url ? (
-                  <img
-                    alt={provider.full_name || "Provider"}
-                    className="w-full h-full rounded-full object-cover"
-                    src={profileUser?.image_url || provider.profile_image_url || provider.image_url || ""}
-                  />
-                ) : (
-                  <span className="text-4xl font-bold text-green-600">{initials}</span>
-                )}
-              </div>
-              <div className="absolute bottom-0 right-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                <span className="material-symbols-outlined text-base">verified</span>
-              </div>
-            </div>
-
-            <div className="text-center md:text-left flex-1">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                    <input
-                      className="text-2xl font-bold text-gray-900 bg-transparent border-none focus:ring-0"
-                      value={accountEdits.full_name ?? profileUser?.full_name ?? provider.full_name ?? ""}
-                      onChange={(e) => handleAccountChange("full_name", e.target.value)}
-                    />
-                  </h3>
-                  <p className="text-gray-500 text-sm">
-                    <input
-                      className="text-sm text-gray-500 bg-transparent border-none focus:ring-0"
-                      value={accountEdits.email ?? profileUser?.email ?? provider.email ?? ""}
-                      onChange={(e) => handleAccountChange("email", e.target.value)}
-                    />
-                  </p>
-                </div>
-                <div className="bg-gray-100 rounded-xl px-6 py-3 flex flex-col items-center">
-                  <div className="flex items-center gap-1 text-green-600">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      star
-                    </span>
-                    <span className="text-2xl font-bold">{provider.rating || provider.avg_rating || "4.9"}</span>
+            {!showImageUpload ? (
+              <>
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full border-4 border-green-600 p-1 overflow-hidden shadow-lg bg-green-50 flex items-center justify-center">
+                    {profileImagePreview ? (
+                      <img
+                        alt={provider.full_name || "Provider"}
+                        className="w-full h-full rounded-full object-cover"
+                        src={profileImagePreview}
+                      />
+                    ) : profileUser?.image_url || provider.profile_image_url || provider.image_url ? (
+                      <img
+                        alt={provider.full_name || "Provider"}
+                        className="w-full h-full rounded-full object-cover"
+                        src={profileUser?.image_url || provider.profile_image_url || provider.image_url || ""}
+                      />
+                    ) : (
+                      <span className="text-4xl font-bold text-green-600">{initials}</span>
+                    )}
                   </div>
-                  <span className="text-xs font-medium text-gray-400">{bookings.length} Booking</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowImageUpload(true)}
+                    className="absolute bottom-0 right-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg border-4 border-white hover:bg-green-700 transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">photo_camera</span>
+                  </button>
                 </div>
-              </div>
 
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                  <span className="material-symbols-outlined text-green-600">call</span>
-                  <input
-                    type="text"
-                    className="text-sm font-medium text-gray-700 bg-transparent border-none focus:outline-none"
-                    value={accountEdits.phone_number ?? profileUser?.phone_number ?? provider.phone_number ?? ""}
-                    onChange={(e) => handleAccountChange("phone_number", e.target.value)}
-                    placeholder="0812..."
-                  />
+                <div className="text-center md:text-left flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                        <input
+                          className="text-2xl font-bold text-gray-900 bg-transparent border-none focus:ring-0"
+                          value={accountEdits.full_name ?? profileUser?.full_name ?? provider.full_name ?? ""}
+                          onChange={(e) => handleAccountChange("full_name", e.target.value)}
+                        />
+                      </h3>
+                      <p className="text-gray-500 text-sm">
+                        <input
+                          className="text-sm text-gray-500 bg-transparent border-none focus:ring-0"
+                          value={accountEdits.email ?? profileUser?.email ?? provider.email ?? ""}
+                          onChange={(e) => handleAccountChange("email", e.target.value)}
+                        />
+                      </p>
+                    </div>
+                    <div className="bg-gray-100 rounded-xl px-6 py-3 flex flex-col items-center">
+                      <div className="flex items-center gap-1 text-green-600">
+                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                          star
+                        </span>
+                        <span className="text-2xl font-bold">{provider.rating || provider.avg_rating || "4.9"}</span>
+                      </div>
+                      <span className="text-xs font-medium text-gray-400">{bookings.length} Booking</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="material-symbols-outlined text-green-600">call</span>
+                      <input
+                        type="text"
+                        className="text-sm font-medium text-gray-700 bg-transparent border-none focus:outline-none"
+                        value={accountEdits.phone_number ?? profileUser?.phone_number ?? provider.phone_number ?? ""}
+                        onChange={(e) => handleAccountChange("phone_number", e.target.value)}
+                        placeholder="0812..."
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="material-symbols-outlined text-green-600">location_on</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {provider.base_location_city || "-"}, {provider.province_name || "-"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                  <span className="material-symbols-outlined text-green-600">location_on</span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {provider.base_location_city || "-"}, {provider.province_name || "-"}
-                  </span>
+              </>
+            ) : (
+              <div className="w-full flex flex-col items-center gap-4">
+                <DragDropImageZone
+                  onImageSelected={handleProfileImageSelected}
+                  preview={profileImagePreview}
+                  label="Ubah Foto Profil"
+                />
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowImageUpload(false);
+                      if (!profileImageFile) {
+                        setProfileImagePreview("");
+                      }
+                    }}
+                    className="px-6 py-2 border-2 border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!profileImageFile) return;
+                      const token = localStorage.getItem("accessToken");
+                      if (!token) {
+                        console.error("Token not found");
+                        setShowImageUpload(false);
+                        return;
+                      }
+
+                      try {
+                        const res = await updateMeMultipart(token, { profile_image: profileImageFile });
+                        if (res.success && res.data?.user) {
+                          try {
+                            const userStr = localStorage.getItem("user");
+                            if (userStr) {
+                              const stored = JSON.parse(userStr);
+                              const newUser = { ...stored, ...res.data.user };
+                              localStorage.setItem("user", JSON.stringify(newUser));
+                              setProfileUser((prev) => ({
+                                full_name: newUser.full_name || prev?.full_name || "",
+                                email: newUser.email || prev?.email || "",
+                                phone_number: newUser.phone_number || prev?.phone_number || "",
+                                role: newUser.role || prev?.role || "provider",
+                                image_url: newUser.image_url || prev?.image_url || null,
+                              }));
+                            }
+                          } catch (e) {
+                            console.error("Error updating localStorage after upload", e);
+                          }
+                        } else {
+                          console.error("Failed to upload profile image:", res.message);
+                        }
+                      } catch (e) {
+                        console.error("Error uploading profile image:", e);
+                      } finally {
+                        setShowImageUpload(false);
+                        setProfileImageFile(null);
+                        setProfileImagePreview("");
+                      }
+                    }}
+                    disabled={!profileImageFile}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Simpan Foto
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
@@ -752,13 +858,16 @@ export default function ProfileProviderPage() {
                   <p className="text-sm text-gray-500">Upload sertifikat baru atau hapus sertifikat lama dari daftar berikut.</p>
                 </div>
                 <div className="space-y-3">
-                  <input
-                    type="file"
+                  <DragDropZone
+                    onFileSelected={(file) => setCertificateFile(file)}
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(event) => setCertificateFile(event.target.files?.[0] || null)}
-                    className="block w-full text-sm text-gray-600 file:mr-4 file:rounded-xl file:border-0 file:bg-green-600 file:px-4 file:py-2 file:text-white hover:file:bg-green-700"
+                    maxSize={5 * 1024 * 1024}
+                    label="Upload Sertifikat Baru"
+                    description="Format: PDF, JPG, PNG. Max 5MB"
+                    icon="description"
+                    selectedFile={certificateFile}
+                    disabled={false}
                   />
-                  <p className="text-xs text-gray-500">Format yang didukung: PDF, JPG, JPEG, PNG.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {certifications.length > 0 ? (

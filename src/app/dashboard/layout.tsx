@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logout } from "@/api";
 
 export default function DashboardLayout({
   children,
@@ -14,18 +15,26 @@ export default function DashboardLayout({
   const [userInitials, setUserInitials] = useState("U");
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
+    const syncUser = () => {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) {
+        setUserName("User");
+        setUserInitials("U");
+        setUserImage(null);
+        setUserRole(null);
+        return;
+      }
+
       try {
         const user = JSON.parse(userStr);
         if (user && user.full_name) {
           setUserName(user.full_name);
 
-          // Generate initials
           const names = user.full_name.split(" ");
           const initials = names
             .map((n: string) => n[0])
@@ -37,13 +46,32 @@ export default function DashboardLayout({
         if (user && user.role) {
           setUserRole(user.role);
         }
-        if (user && user.image_url) {
-          setUserImage(user.image_url);
+        setUserImage(user?.image_url || null);
+        // If provider and not verified, immediately redirect to landing page
+        const isVerified = !!user?.providerProfile?.is_verified;
+        if (user?.role === "provider" && !isVerified && pathname && pathname.startsWith("/dashboard")) {
+          // use full navigation to avoid race conditions with client-side routers
+          window.location.href = "/";
+          return;
         }
       } catch (e) {
         console.error("Error parsing user from localStorage", e);
       }
-    }
+    };
+
+    syncUser();
+
+    const handleUserUpdated = () => syncUser();
+    const intervalId = window.setInterval(syncUser, 500);
+
+    window.addEventListener("user-updated", handleUserUpdated);
+    window.addEventListener("storage", handleUserUpdated);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("user-updated", handleUserUpdated);
+      window.removeEventListener("storage", handleUserUpdated);
+    };
   }, []);
 
   const userMenuItems = [
@@ -78,6 +106,7 @@ export default function DashboardLayout({
       icon: "verified_user",
       href: "/dashboard/admin/verification",
     },
+    { name: "Profile", icon: "person", href: "/dashboard/admin/profil" },
   ];
 
   let menuItems = userMenuItems;
@@ -91,8 +120,24 @@ export default function DashboardLayout({
     // If user role is known, ensure they're on the correct dashboard path
     if (!userRole || !pathname) return;
 
-    // If provider but on user/admin routes, redirect to provider dashboard
-    if (userRole === "provider" && (pathname.startsWith("/dashboard/user") || pathname.startsWith("/dashboard/admin"))) {
+    // Determine provider verification status from localStorage (if present)
+    let isProviderVerified = false;
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        isProviderVerified = !!parsed?.providerProfile?.is_verified;
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+
+    // If provider and verified but currently on user/admin routes, redirect to provider dashboard
+    if (
+      userRole === "provider" &&
+      isProviderVerified &&
+      (pathname.startsWith("/dashboard/user") || pathname.startsWith("/dashboard/admin"))
+    ) {
       router.replace("/dashboard/provider");
       return;
     }
@@ -104,11 +149,36 @@ export default function DashboardLayout({
     }
 
     // If non-admin non-provider but on provider/admin routes, redirect to user dashboard
-    if (userRole !== "provider" && userRole !== "admin" && (pathname.startsWith("/dashboard/provider") || pathname.startsWith("/dashboard/admin"))) {
+    if (
+      userRole !== "provider" &&
+      userRole !== "admin" &&
+      (pathname.startsWith("/dashboard/provider") || pathname.startsWith("/dashboard/admin"))
+    ) {
       router.replace("/dashboard/user");
       return;
     }
+
+    // If provider but NOT verified and currently on provider routes, send them back to landing page
+    if (userRole === "provider" && !isProviderVerified && pathname.startsWith("/dashboard/provider")) {
+      router.replace("/");
+      return;
+    }
   }, [userRole, pathname, router]);
+
+  const handleLogout = () => {
+    const result = logout();
+    if (result.success) {
+      setIsAccountMenuOpen(false);
+      router.push("/");
+    }
+  };
+
+  const profileHref =
+    userRole === "provider"
+      ? "/dashboard/provider/profil"
+      : userRole === "admin"
+        ? "/dashboard/admin/profil"
+        : "/dashboard/user/profil";
 
   return (
     <div className="min-h-screen bg-[#fcf9f8] text-[#1b1c1c] font-sans">
@@ -186,7 +256,7 @@ export default function DashboardLayout({
                   help_outline
                 </span>
               </div>
-              <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
+              <div className="relative flex items-center gap-3 pl-6 border-l border-gray-200">
                 <div className="text-right">
                   <p className="font-bold text-gray-900">{userName}</p>
                   <div className="flex items-center justify-end gap-1">
@@ -194,7 +264,11 @@ export default function DashboardLayout({
                     <span className="text-xs text-gray-500">Aktif</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setIsAccountMenuOpen((value) => !value)}
+                  className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden ring-0 hover:ring-4 hover:ring-green-100 transition-all"
+                >
                   {userImage ? (
                     <img
                       src={userImage}
@@ -204,7 +278,32 @@ export default function DashboardLayout({
                   ) : (
                     userInitials
                   )}
-                </div>
+                </button>
+
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 top-14 w-56 rounded-2xl border border-gray-100 bg-white shadow-xl overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="font-semibold text-gray-900">{userName}</p>
+                      <p className="text-xs text-gray-500 capitalize">{userRole || "user"}</p>
+                    </div>
+                    <Link
+                      href={profileHref}
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base text-gray-500">person</span>
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                    >
+                      <span className="material-symbols-outlined text-base">logout</span>
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </header>
