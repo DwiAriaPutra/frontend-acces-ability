@@ -29,12 +29,23 @@ export const createReview = async (
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        `[API Error] createReview (${response.status}):`,
-        errorText.substring(0, 200)
-      );
-      return null;
+      // Try parse JSON error body for more informative message
+      let errorMessage = `Request failed with status ${response.status}`;
+      try {
+        const errBody = await response.json();
+        if (errBody && errBody.message) errorMessage = String(errBody.message);
+        // attach details if available
+        const err = new Error(errorMessage);
+        (err as any).details = errBody?.details ?? null;
+        throw err;
+      } catch (parseErr) {
+        const errorText = await response.text();
+        console.error(
+          `[API Error] createReview (${response.status}):`,
+          errorText.substring(0, 200)
+        );
+        throw new Error(errorText || errorMessage);
+      }
     }
 
     const result: ApiResponse<{ review?: ReviewItem }> = await response.json();
@@ -44,7 +55,7 @@ export const createReview = async (
     }
 
     console.error("[API Error] createReview: Invalid response format", result);
-    return null;
+    throw new Error("Invalid response from server");
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";

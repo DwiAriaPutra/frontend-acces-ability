@@ -378,20 +378,30 @@ export default function BookingDetailPage() {
             </div>
           ) : null}
 
-          <ReviewForm
-            bookingId={booking.id}
-            existingReview={existingReview}
-            onCreated={async () => {
-              const token = localStorage.getItem("accessToken");
-              if (!token) return;
-              const [detail, history] = await Promise.all([
-                getBookingDetail(token, booking.id),
-                getBookingHistory(token, booking.id),
-              ]);
-              setBooking(detail as BookingDetail);
-              setHistories(history as BookingStatusHistoryItem[]);
-            }}
-          />
+          {booking.status === "completed" ? (
+            <ReviewForm
+              bookingId={booking.id}
+              existingReview={existingReview}
+              onCreated={async () => {
+                const token = localStorage.getItem("accessToken");
+                if (!token) return;
+                const [detail, history] = await Promise.all([
+                  getBookingDetail(token, booking.id),
+                  getBookingHistory(token, booking.id),
+                ]);
+                setBooking(detail as BookingDetail);
+                setHistories(history as BookingStatusHistoryItem[]);
+              }}
+            />
+          ) : booking.status === "cancelled" ? (
+            <div className="rounded-2xl bg-gray-50 p-4 border border-gray-200 text-sm text-gray-600">
+              Rating tidak tersedia untuk booking yang dibatalkan.
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-gray-50 p-4 border border-gray-200 text-sm text-gray-600">
+              Rating akan tersedia setelah booking selesai.
+            </div>
+          )}
 
           <div className={`rounded-3xl border ${statusConfig.borderColor} bg-white p-6 shadow-sm`}>
             <h2 className="text-xl font-bold text-gray-900">Status History</h2>

@@ -92,6 +92,33 @@ const getNextDateForDay = (dayOfWeek: number) => {
   return target.toISOString().slice(0, 10);
 };
 
+const getFriendlyBookingErrorMessage = (error: unknown) => {
+  const fallbackMessage =
+    "Booking gagal dibuat. Coba periksa jadwal dan data input.";
+
+  const rawMessage = error instanceof Error ? error.message : "";
+
+  if (!rawMessage) return fallbackMessage;
+
+  if (rawMessage.includes("Provider has another booking")) {
+    return "Provider sudah punya booking di jam tersebut. Silakan pilih jadwal lain.";
+  }
+
+  if (rawMessage.includes("not available")) {
+    return "Provider tidak tersedia pada jadwal yang dipilih. Silakan pilih jam lain.";
+  }
+
+  if (rawMessage.includes("Invalid time range")) {
+    return "Jam booking tidak valid. Pastikan jam mulai dan selesai benar.";
+  }
+
+  if (rawMessage.includes("Only user can create booking")) {
+    return "Akun Anda tidak punya izin untuk membuat booking.";
+  }
+
+  return fallbackMessage;
+};
+
 export default function BookingOrderPage() {
   const router = useRouter();
   const [providerId, setProviderId] = useState("");
@@ -292,17 +319,23 @@ export default function BookingOrderPage() {
       request_notes: combinedNotes || undefined,
     };
 
-    const booking = await createBooking(token, payload);
+    try {
+      const booking = await createBooking(token, payload);
 
-    setIsSubmitting(false);
+      if (!booking) {
+        setErrorMessage("Booking gagal dibuat. Coba periksa jadwal dan data input.");
+        return;
+      }
 
-    if (!booking) {
-      setErrorMessage("Booking gagal dibuat. Coba periksa jadwal dan data input.");
-      return;
+      setSuccessMessage("Booking berhasil dibuat.");
+      router.push("/dashboard/user/booking");
+    } catch (error) {
+      const backendMessage = error instanceof Error ? error.message : "Unknown booking error";
+      console.error("[Booking UI] createBooking failed:", backendMessage);
+      setErrorMessage(getFriendlyBookingErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setSuccessMessage("Booking berhasil dibuat.");
-    router.push("/dashboard/user/booking");
   };
 
   if (isLoading) {

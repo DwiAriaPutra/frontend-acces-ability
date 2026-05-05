@@ -264,6 +264,21 @@ export const createBooking = async (
   token: string,
   payload: BookingCreatePayload
 ): Promise<Booking | null> => {
+  const readErrorMessage = async (response: Response) => {
+    const rawText = await response.text();
+
+    try {
+      const parsed = JSON.parse(rawText) as { message?: unknown };
+      if (parsed?.message) {
+        return String(parsed.message);
+      }
+    } catch {
+      // fall through to raw text
+    }
+
+    return rawText || `Request failed with status ${response.status}`;
+  };
+
   try {
     const baseUrl = BACKEND_URL.endsWith("/")
       ? BACKEND_URL.slice(0, -1)
@@ -280,12 +295,12 @@ export const createBooking = async (
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorMessage = await readErrorMessage(response);
       console.error(
         `[API Error] createBooking (${response.status}):`,
-        errorText.substring(0, 200)
+        errorMessage.substring(0, 200)
       );
-      return null;
+      throw new Error(errorMessage);
     }
 
     const result: ApiResponse<{ booking?: Booking }> = await response.json();
@@ -295,12 +310,16 @@ export const createBooking = async (
     }
 
     console.error("[API Error] createBooking: Invalid response format", result);
-    return null;
+    throw new Error("Invalid response from server");
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    if (error instanceof Error) {
+      console.error("[API Error] createBooking:", error.message);
+      throw error;
+    }
+
+    const errorMessage = "Unknown error occurred";
     console.error("[API Error] createBooking:", errorMessage);
-    return null;
+    throw new Error(errorMessage);
   }
 };
 
