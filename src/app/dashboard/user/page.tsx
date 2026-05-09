@@ -83,9 +83,9 @@ export default function UserDashboardPage() {
   };
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6 lg:space-y-8">
       {/* Main Banner */}
-      <section className="relative overflow-hidden bg-green-600 rounded-3xl p-12 min-h-[320px] flex flex-col justify-center">
+      <section className="relative overflow-hidden bg-green-600 rounded-3xl p-6 sm:p-8 lg:p-12 min-h-[280px] lg:min-h-[320px] flex flex-col justify-center">
         <div className="absolute inset-0 z-0">
           <img
             className="w-full h-full object-cover opacity-20 mix-blend-overlay"
@@ -94,16 +94,16 @@ export default function UserDashboardPage() {
           />
         </div>
         <div className="relative z-10 max-w-2xl">
-          <h2 className="text-white text-4xl font-bold mb-4">
+          <h2 className="text-white text-3xl lg:text-4xl font-bold mb-4">
             Selamat datang, {userName}
           </h2>
-          <p className="text-green-50 text-lg mb-8 opacity-90">
+          <p className="text-green-50 text-base lg:text-lg mb-8 opacity-90">
             Kami menghubungkan Anda dengan penyedia layanan profesional yang
             siap membantu memenuhi kebutuhan spesifik Anda dengan empati dan
             keahlian.
           </p>
           <div className="flex gap-4">
-            <button className="px-8 py-3 bg-white text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-colors shadow-lg shadow-black/5">
+            <button className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-colors shadow-lg shadow-black/5">
               Mulai Cari Provider
             </button>
           </div>
@@ -151,7 +151,7 @@ export default function UserDashboardPage() {
 
       {/* Kategori Layanan Section */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-gray-900">Kategori Layanan</h2>
           <a className="text-green-600 font-semibold hover:underline" href="#">
             Lihat Semua
@@ -203,14 +203,14 @@ export default function UserDashboardPage() {
 
       {/* Table Section */}
       <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">Riwayat Layanan</h2>
           <span className="material-symbols-outlined text-gray-400 cursor-pointer">
             more_horiz
           </span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto md:overflow-visible">
+          <table className="responsive-data-table w-full text-left">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-sm font-semibold">
                 <th className="px-6 py-4">Provider</th>
@@ -249,7 +249,7 @@ export default function UserDashboardPage() {
                       key={booking.id}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5" data-label="Provider">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
                             {initials || "PR"}
@@ -259,13 +259,13 @@ export default function UserDashboardPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-gray-600 text-sm">
+                      <td className="px-6 py-5 text-gray-600 text-sm" data-label="Layanan">
                         {booking.service_type?.name || "Layanan Pendampingan"}
                       </td>
-                      <td className="px-6 py-5 text-gray-600 text-sm">
+                      <td className="px-6 py-5 text-gray-600 text-sm" data-label="Tanggal">
                         {formatBookingDate(booking.booking_date)}
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5" data-label="Status">
                         <span
                           className={`px-4 py-1.5 rounded-full text-xs font-bold ${statusBadge.className}`}
                         >

@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8 max-w-[1200px] mx-auto min-h-[70vh] flex items-center justify-center">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto min-h-[70vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
           <p className="text-gray-500 font-medium">Memuat admin dashboard...</p>
@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
 
   if (unauthorized) {
     return (
-      <div className="p-8 max-w-[1200px] mx-auto min-h-[70vh] flex flex-col items-center justify-center space-y-4">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto min-h-[70vh] flex flex-col items-center justify-center space-y-4">
         <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center">
           <span className="material-symbols-outlined text-red-600 text-5xl">
             lock
@@ -66,10 +66,10 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="p-8 max-w-[1200px] mx-auto space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto space-y-6 lg:space-y-8">
       {/* Header */}
       <section className="space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="text-gray-600">
           Selamat datang, {userName}. Kelola verifikasi provider dan sistem dari sini.
         </p>

@@ -552,7 +552,7 @@ export default function ProviderVerificationPage() {
 
   if (isBootstrapping || listLoading) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-[1200px] items-center justify-center p-8">
+      <div className="mx-auto flex min-h-[70vh] max-w-[1200px] items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-green-600" />
           <p className="font-medium text-gray-500">Memuat antrian verifikasi provider...</p>
@@ -563,7 +563,7 @@ export default function ProviderVerificationPage() {
 
   if (unauthorized) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-[1200px] flex-col items-center justify-center space-y-4 p-8 text-center">
+      <div className="mx-auto flex min-h-[70vh] max-w-[1200px] flex-col items-center justify-center space-y-4 p-4 sm:p-6 lg:p-8 text-center">
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-red-50">
           <span className="material-symbols-outlined text-5xl text-red-600">lock</span>
         </div>
@@ -577,7 +577,7 @@ export default function ProviderVerificationPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 p-8">
+    <div className="mx-auto max-w-[1400px] space-y-6 lg:space-y-8 p-4 sm:p-6 lg:p-8">
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-2">
@@ -588,14 +588,14 @@ export default function ProviderVerificationPage() {
               <span className="material-symbols-outlined text-base">arrow_back</span>
               Kembali ke admin dashboard
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900">Verifikasi Provider</h1>
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Verifikasi Provider</h1>
             <p className="max-w-3xl text-gray-600">
               Tinjau profil, sertifikat, dan status pengajuan provider sebelum
               mereka aktif di platform. Selamat datang, {userName}.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="grid w-full grid-cols-2 gap-3 md:w-auto md:grid-cols-4">
             <div className="rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Total</p>
               <p className="mt-1 text-2xl font-bold text-gray-900">{summaryCounts.total}</p>
@@ -615,7 +615,7 @@ export default function ProviderVerificationPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
           <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
             <span className="material-symbols-outlined text-gray-400">search</span>
             <input
@@ -627,7 +627,7 @@ export default function ProviderVerificationPage() {
             />
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
             {(["all", "pending", "approved", "rejected"] as const).map((status) => (
               <button
                 key={status}
@@ -673,7 +673,7 @@ export default function ProviderVerificationPage() {
         ) : null}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[420px_1fr]">
+      <section className="grid gap-6 xl:grid-cols-[minmax(320px,420px)_minmax(0,1fr)]">
         <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
             <div>
@@ -689,7 +689,7 @@ export default function ProviderVerificationPage() {
             ) : null}
           </div>
 
-          <div className="max-h-[calc(100vh-22rem)] overflow-y-auto p-4">
+          <div className="max-h-none overflow-y-visible p-4 xl:max-h-[calc(100vh-22rem)] xl:overflow-y-auto">
             {filteredProviders.length > 0 ? (
               <div className="space-y-3">
                 {filteredProviders.map((provider) => {
@@ -710,14 +710,14 @@ export default function ProviderVerificationPage() {
                           : "border-gray-100 bg-white hover:border-green-100 hover:bg-gray-50"
                       }`}
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                         <img
                           src={avatar}
                           alt={providerName}
                           className="h-16 w-16 rounded-2xl object-cover"
                         />
                         <div className="min-w-0 flex-1 space-y-2">
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0">
                               <h3 className="truncate text-base font-bold text-gray-900">
                                 {providerName}
@@ -776,12 +776,12 @@ export default function ProviderVerificationPage() {
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
             {activeProvider ? (
               <>
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     <img
                       src={getProviderAvatar(activeProvider)}
                       alt={getProviderName(activeProvider)}
-                      className="h-24 w-24 rounded-3xl object-cover"
+                      className="h-20 w-20 sm:h-24 sm:w-24 rounded-3xl object-cover"
                     />
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center gap-3">
@@ -811,12 +811,12 @@ export default function ProviderVerificationPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3">
+                  <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:w-auto lg:flex lg:flex-wrap">
                     <button
                       type="button"
                       onClick={() => void handleVerification("approved")}
                       disabled={actionBusy !== null || activeStatus !== "pending"}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <span className="material-symbols-outlined text-base">check</span>
                       {actionBusy === "approved" ? "Menyetujui..." : "Setujui"}
@@ -825,7 +825,7 @@ export default function ProviderVerificationPage() {
                       type="button"
                       onClick={() => void handleVerification("rejected")}
                       disabled={actionBusy !== null || activeStatus !== "pending"}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-bold text-white transition-all hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <span className="material-symbols-outlined text-base">close</span>
                       {actionBusy === "rejected" ? "Menolak..." : "Tolak"}
@@ -855,7 +855,7 @@ export default function ProviderVerificationPage() {
                 ) : null}
 
                 <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <h3 className="text-xl font-bold text-gray-900">Sertifikasi</h3>
                     <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
                       {activeCertifications.length} sertifikat
@@ -1006,7 +1006,7 @@ export default function ProviderVerificationPage() {
               </div>
 
               <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">Sertifikasi</h3>
                     <p className="mt-1 text-sm text-gray-500">

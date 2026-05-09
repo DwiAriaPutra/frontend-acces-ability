@@ -43,7 +43,7 @@ export default function Home() {
       {/* BEGIN: HeroSection */}
       <section className="relative pt-20">
         <div 
-          className="relative min-h-[600px] flex flex-col items-center justify-center text-center px-4 py-20"
+          className="relative min-h-[560px] md:min-h-[600px] flex flex-col items-center justify-center text-center px-4 py-16 md:py-20"
           style={{
             backgroundImage: 'url(/images/hero-bg.svg)',
             backgroundSize: 'cover',
@@ -57,25 +57,25 @@ export default function Home() {
             <h1 className="text-3xl md:text-5xl font-bold text-black max-w-4xl leading-tight">
               Hubungkan Pengguna dengan Pendamping Disabilitas Profesional
             </h1>
-            <p className="mt-6 text-black max-w-2xl text-lg italic">
+            <p className="mt-5 md:mt-6 text-black max-w-2xl text-base md:text-lg italic">
               Temukan bantuan komunikasi bahasa isyarat, pendampingan mobilitas, dan layanan terapi profesional yang dirancang untuk mendukung kemandirian Anda.
             </p>
             {/* Search Bar */}
-            <div className="mt-10 w-full px-4 flex justify-center">
-              <div className="w-full max-w-2xl bg-white p-2 rounded-lg shadow-lg flex items-center">
+            <div className="mt-8 md:mt-10 w-full px-0 sm:px-4 flex justify-center">
+              <div className="w-full max-w-2xl bg-white p-2 rounded-lg shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0">
               <div className="flex-grow flex items-center px-4">
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                 </svg>
-                <input className="w-full border-none focus:ring-0 text-sm outline-none" placeholder="Cari layanan..." type="text" />
+                <input className="w-full min-w-0 border-none focus:ring-0 text-sm outline-none py-2" placeholder="Cari layanan..." type="text" />
               </div>
               <button className="bg-brand-green text-white px-8 py-2 rounded-md font-medium hover:bg-brand-green-hover transition">Cari</button>
             </div>
             </div>
             {/* Action Buttons */}
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/login" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Cari Pendamping</Link>
-              <Link href="/register-provider" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition">Daftar Sebagai Provider</Link>
+            <div className="mt-8 flex w-full flex-col sm:w-auto sm:flex-row sm:flex-wrap justify-center gap-4">
+              <Link href="/login" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition text-center">Cari Pendamping</Link>
+              <Link href="/register-provider" className="bg-brand-green text-white px-8 py-3 rounded-md font-medium shadow-md hover:bg-brand-green-hover transition text-center">Daftar Sebagai Provider</Link>
             </div>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function Home() {
       {/* END: HeroSection */}
 
       {/* BEGIN: KategoriLayanan */}
-      <section id="layanan" className="py-20 max-w-7xl mx-auto px-4">
+      <section id="layanan" className="py-14 md:py-20 max-w-7xl mx-auto px-4">
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900">Kategori Layanan</h2>
           <p className="text-gray-500 mt-2">Pilih kategori layanan yang anda butuhkan</p>
@@ -126,7 +126,7 @@ export default function Home() {
       {/* END: KategoriLayanan */}
 
       {/* BEGIN: CaraKerja */}
-      <section className="py-20 bg-gray-50 overflow-hidden">
+      <section className="py-14 md:py-20 bg-gray-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-gray-900">Cara Kerja ACCESS-ABILITY</h2>
           <p className="text-gray-500 mt-2">Proses sederhana untuk menghubungkan pengguna dengan pendamping profesional</p>
@@ -165,11 +165,11 @@ export default function Home() {
       {/* END: CaraKerja */}
 
       {/* BEGIN: BigCTA */}
-      <section className="cta-bg py-32">
-        <div className="max-w-7xl mx-auto px-8">
+      <section className="cta-bg py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="max-w-xl text-white">
-            <h2 className="text-4xl font-bold leading-tight mb-4">Butuh Pendamping Disabilitas?<br />Temukan di ACCESS-ABILITY</h2>
-            <p className="text-lg opacity-90 mb-10">Platform yang menghubungkan pengguna dengan penyedia layanan pendamping disabilitas secara cepat dan mudah.</p>
+            <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-4">Butuh Pendamping Disabilitas?<br />Temukan di ACCESS-ABILITY</h2>
+            <p className="text-base md:text-lg opacity-90 mb-10">Platform yang menghubungkan pengguna dengan penyedia layanan pendamping disabilitas secara cepat dan mudah.</p>
             <button className="bg-white text-brand-green px-8 py-3 rounded-md font-bold hover:bg-gray-100 transition inline-block">Cari Pendamping</button>
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function Home() {
       {/* END: BigCTA */}
 
       {/* BEGIN: Testimonials */}
-      <section id="tentang-kami" className="py-20 max-w-7xl mx-auto px-4">
+      <section id="tentang-kami" className="py-14 md:py-20 max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Kata Mereka Tentang kami</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Testimonial 1 */}

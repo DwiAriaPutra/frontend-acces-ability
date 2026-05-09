@@ -26,6 +26,103 @@ body {
   font-family: var(--font-inter);
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  * {
+    min-width: 0;
+  }
+
+  .p-8 {
+    padding: 1rem !important;
+  }
+
+  .px-8 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .py-20,
+  .py-32 {
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .gap-8 {
+    gap: 1rem !important;
+  }
+
+  .responsive-data-table {
+    border-collapse: separate;
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-data-table thead {
+    display: none;
+  }
+
+  .responsive-data-table tbody {
+    display: grid;
+    gap: 0.875rem;
+    padding: 1rem;
+  }
+
+  .responsive-data-table tr {
+    display: block;
+    overflow: hidden;
+    border: 1px solid rgb(243 244 246);
+    border-radius: 1rem;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+
+  .responsive-data-table tr:hover {
+    background: #ffffff;
+  }
+
+  .responsive-data-table td {
+    border: 0;
+    padding: 0.875rem 1rem !important;
+  }
+
+  .responsive-data-table td[data-label] {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 0.8fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    text-align: left;
+  }
+
+  .responsive-data-table td[data-label]::before {
+    content: attr(data-label);
+    color: rgb(107 114 128);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .responsive-data-table td[data-label="Aksi"] {
+    display: block;
+  }
+
+  .responsive-data-table td[data-label="Aksi"]::before {
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+}
+
 .hero-gradient {
   background: linear-gradient(
       rgba(255, 255, 255, 0.6),
