@@ -16,6 +16,7 @@ export default function DashboardLayout({
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -203,8 +204,18 @@ export default function DashboardLayout({
         }}
       />
       <div className="flex">
+        {/* Mobile Sidebar Overlay */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className="fixed left-0 top-0 hidden md:flex flex-col z-40 h-screen w-64 border-r border-gray-200 bg-white antialiased">
+        <aside className={`fixed left-0 top-0 flex flex-col z-40 h-screen w-64 border-r border-gray-200 bg-white antialiased transition-transform duration-300 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        } md:relative md:translate-x-0`}>
           <div className="px-6 py-8">
             <Link href="/">
               <h1 className="text-xl font-bold tracking-tight text-green-600 uppercase">
@@ -227,6 +238,7 @@ export default function DashboardLayout({
                       : "text-gray-500 hover:text-green-600 hover:bg-gray-50"
                   }`}
                   href={item.href}
+                  onClick={() => setIsSidebarOpen(false)}
                 >
                   <span className="material-symbols-outlined">{item.icon}</span>
                   <span className="text-sm">{item.name}</span>
@@ -245,8 +257,19 @@ export default function DashboardLayout({
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 md:ml-64">
-          <header className="sticky top-0 z-30 flex items-center justify-end px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
+        <div className="flex-1">
+          <header className="sticky top-0 z-30 flex items-center px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
+            {/* Hamburger Button - Mobile Only */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="md:hidden flex-shrink-0 flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-lg transition-colors -ml-2"
+              type="button"
+            >
+              <span className="material-symbols-outlined text-xl">menu</span>
+            </button>
+
+            <div className="flex-1"></div>
+
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-gray-400 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 cursor-pointer">

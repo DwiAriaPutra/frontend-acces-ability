@@ -309,7 +309,7 @@ export const addMyProviderCertificate = async (
 
     const url = `${baseUrl}/api/v1/providers/me/certifications`;
     const formData = new FormData();
-    formData.append("provider_certificate", file);
+    formData.append("certificate_file", file);
 
     const response = await fetch(url, {
       method: "POST",
