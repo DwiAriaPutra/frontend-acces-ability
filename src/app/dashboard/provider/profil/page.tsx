@@ -33,12 +33,7 @@ import {
   getUserBookings,
   updateMyProvider,
   logout,
-  updateMeMultipart,
 } from "@/api";
-import {
-  getCertificationStatusLabel,
-  normalizeCertificationStatus,
-} from "@/utils/certification";
 
 type ProviderProfileFormState = {
   bio: string;
@@ -431,7 +426,6 @@ export default function ProfileProviderPage() {
                 role: newUser.role || profileUser?.role || "provider",
                 image_url: newUser.image_url || profileUser?.image_url || null,
               });
-              window.dispatchEvent(new Event("user-updated"));
             }
           } catch (e) {
             console.error("Error updating localStorage after user update", e);
@@ -518,7 +512,6 @@ export default function ProfileProviderPage() {
               providerProfile: refreshedProvider,
             })
           );
-          window.dispatchEvent(new Event("user-updated"));
         } catch (storageError) {
           console.error("Error updating localStorage user", storageError);
         }
@@ -675,45 +668,10 @@ export default function ProfileProviderPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
-                      if (!profileImageFile) return;
-                      const token = localStorage.getItem("accessToken");
-                      if (!token) {
-                        console.error("Token not found");
-                        setShowImageUpload(false);
-                        return;
-                      }
-
-                      try {
-                        const res = await updateMeMultipart(token, { profile_image: profileImageFile });
-                        if (res.success && res.data?.user) {
-                          try {
-                            const userStr = localStorage.getItem("user");
-                            if (userStr) {
-                              const stored = JSON.parse(userStr);
-                              const newUser = { ...stored, ...res.data.user };
-                              localStorage.setItem("user", JSON.stringify(newUser));
-                              setProfileUser((prev) => ({
-                                full_name: newUser.full_name || prev?.full_name || "",
-                                email: newUser.email || prev?.email || "",
-                                phone_number: newUser.phone_number || prev?.phone_number || "",
-                                role: newUser.role || prev?.role || "provider",
-                                image_url: newUser.image_url || prev?.image_url || null,
-                              }));
-                            }
-                          } catch (e) {
-                            console.error("Error updating localStorage after upload", e);
-                          }
-                        } else {
-                          console.error("Failed to upload profile image:", res.message);
-                        }
-                      } catch (e) {
-                        console.error("Error uploading profile image:", e);
-                      } finally {
-                        setShowImageUpload(false);
-                        setProfileImageFile(null);
-                        setProfileImagePreview("");
-                      }
+                    onClick={() => {
+                      // TODO: Implement API call to upload image
+                      console.log("Uploading profile image:", profileImageFile);
+                      setShowImageUpload(false);
                     }}
                     disabled={!profileImageFile}
                     className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -880,17 +838,7 @@ export default function ProfileProviderPage() {
                         <div>
                           <p className="text-sm font-semibold text-gray-800">Sertifikat</p>
                           <p className="text-xs text-gray-500 break-all">{certification.file_url || "-"}</p>
-                          <p
-                            className={`text-xs mt-1 font-semibold ${
-                              normalizeCertificationStatus(certification) === "approved"
-                                ? "text-green-600"
-                                : normalizeCertificationStatus(certification) === "rejected"
-                                  ? "text-rose-600"
-                                  : "text-amber-600"
-                            }`}
-                          >
-                            Status: {getCertificationStatusLabel(normalizeCertificationStatus(certification))}
-                          </p>
+                          <p className="text-xs text-gray-400 mt-1">Status: {certification.verification_status || "-"}</p>
                         </div>
                         <button
                           type="button"

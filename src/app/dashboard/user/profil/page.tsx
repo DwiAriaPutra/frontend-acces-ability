@@ -11,7 +11,7 @@ Status: Active.
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DragDropImageZone from "@/components/DragDropImageZone";
-import { getUserBookings, logout, updateMe, updateMeMultipart } from "@/api";
+import { getUserBookings, logout } from "@/api";
 import type { Booking } from "@/api";
 
 export default function ProfilPage() {
@@ -29,12 +29,6 @@ export default function ProfilPage() {
     completedServices: 0,
   });
   const [isStatsLoading, setIsStatsLoading] = useState(true);
-  const [accountEdits, setAccountEdits] = useState({
-    full_name: "",
-    email: "",
-    phone_number: "",
-  });
-  const [isSavingAccount, setIsSavingAccount] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string>("");
   const [showImageUpload, setShowImageUpload] = useState(false);
@@ -50,11 +44,6 @@ export default function ProfilPage() {
           phone: storedUser.phone_number || storedUser.phone || "-",
           role: storedUser.role || "user",
           image_url: storedUser.image_url || "",
-        });
-        setAccountEdits({
-          full_name: storedUser.full_name || "",
-          email: storedUser.email || "",
-          phone_number: storedUser.phone_number || storedUser.phone || "",
         });
       } catch (error) {
         console.error("Error parsing user from localStorage", error);
@@ -115,57 +104,6 @@ export default function ProfilPage() {
     } else {
       setProfileImageFile(null);
       setProfileImagePreview("");
-    }
-  };
-
-  const handleAccountChange = (field: keyof typeof accountEdits, value: string) => {
-    setAccountEdits((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  };
-
-  const handleSaveAccount = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      console.error("Token not found");
-      return;
-    }
-
-    setIsSavingAccount(true);
-    try {
-      const payload: { full_name?: string | null; email?: string | null; phone_number?: string | null } = {};
-
-      if (accountEdits.full_name !== user.full_name) payload.full_name = accountEdits.full_name || null;
-      if (accountEdits.email !== user.email) payload.email = accountEdits.email || null;
-      if (accountEdits.phone_number !== user.phone) payload.phone_number = accountEdits.phone_number || null;
-
-      if (Object.keys(payload).length === 0) return;
-
-      const result = await updateMe(token, payload);
-      if (!result.success || !result.data?.user) {
-        console.error("Failed to update account:", result.message);
-        return;
-      }
-
-      const updatedUser = result.data.user;
-      const mergedUser = {
-        ...JSON.parse(localStorage.getItem("user") || "{}"),
-        ...updatedUser,
-      };
-
-      localStorage.setItem("user", JSON.stringify(mergedUser));
-      setUser((current) => ({
-        ...current,
-        full_name: updatedUser.full_name || current.full_name,
-        email: updatedUser.email || current.email,
-        phone: updatedUser.phone_number || current.phone,
-      }));
-      window.dispatchEvent(new Event("user-updated"));
-    } catch (error) {
-      console.error("Error saving account data", error);
-    } finally {
-      setIsSavingAccount(false);
     }
   };
 
@@ -238,41 +176,10 @@ export default function ProfilPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (!profileImageFile) return;
-                        const token = localStorage.getItem("accessToken");
-                        if (!token) {
-                          console.error("Token not found");
-                          setShowImageUpload(false);
-                          return;
-                        }
-
-                        try {
-                          const res = await updateMeMultipart(token, { profile_image: profileImageFile });
-                          if (res.success && res.data?.user) {
-                            // update localStorage and UI
-                            try {
-                              const userStr = localStorage.getItem("user");
-                              if (userStr) {
-                                const stored = JSON.parse(userStr);
-                                const newUser = { ...stored, ...res.data.user };
-                                localStorage.setItem("user", JSON.stringify(newUser));
-                                setUser((u) => ({ ...u, image_url: newUser.image_url || "" }));
-                                window.dispatchEvent(new Event("user-updated"));
-                              }
-                            } catch (e) {
-                              console.error("Error updating localStorage after upload", e);
-                            }
-                          } else {
-                            console.error("Failed to upload profile image:", res.message);
-                          }
-                        } catch (e) {
-                          console.error("Error uploading profile image:", e);
-                        } finally {
-                          setShowImageUpload(false);
-                          setProfileImageFile(null);
-                          setProfileImagePreview("");
-                        }
+                      onClick={() => {
+                        // TODO: Implement API call to upload image
+                        console.log("Uploading profile image:", profileImageFile);
+                        setShowImageUpload(false);
                       }}
                       disabled={!profileImageFile}
                       className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -292,8 +199,7 @@ export default function ProfilPage() {
                     <input
                       className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all text-gray-700 bg-gray-50/50"
                       type="text"
-                      value={accountEdits.full_name}
-                      onChange={(event) => handleAccountChange("full_name", event.target.value)}
+                      defaultValue={user.full_name}
                     />
                   </div>
                   <div className="space-y-2">
@@ -301,8 +207,7 @@ export default function ProfilPage() {
                     <input
                       className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all text-gray-700 bg-gray-50/50"
                       type="email"
-                      value={accountEdits.email}
-                      onChange={(event) => handleAccountChange("email", event.target.value)}
+                      defaultValue={user.email}
                       readOnly
                     />
                   </div>
@@ -311,19 +216,16 @@ export default function ProfilPage() {
                     <input
                       className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all text-gray-700 bg-gray-50/50"
                       type="text"
-                      value={accountEdits.phone_number}
-                      onChange={(event) => handleAccountChange("phone_number", event.target.value)}
+                      defaultValue={user.phone}
                     />
                   </div>
                 </div>
                 <div className="pt-4">
                   <button
-                    onClick={handleSaveAccount}
-                    disabled={isSavingAccount}
                     className="w-full md:w-auto px-10 py-3.5 bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-600/20 hover:bg-green-700 transition-all active:scale-95"
                     type="button"
                   >
-                    {isSavingAccount ? "Menyimpan..." : "Simpan Perubahan"}
+                    Simpan Perubahan
                   </button>
                 </div>
               </form>

@@ -73,18 +73,16 @@ export default function DragDropImageZone({
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!disabled) {
-      setIsDragging(true);
-    }
-  };
-
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,11 +91,16 @@ export default function DragDropImageZone({
       const file = files[0];
       if (validateImage(file)) {
         onImageSelected(file);
+        // Reset input value so same file can be selected again
+        e.target.value = '';
       }
     }
   };
 
-  const handleClick = () => {
+  const handleClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     if (!disabled) {
       inputRef.current?.click();
     }
@@ -109,8 +112,8 @@ export default function DragDropImageZone({
     <div
       onDrop={handleDrop}
       onDragEnter={handleDragEnter}
-      onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
       onClick={handleClick}
       className={`
         flex flex-col items-center gap-4 cursor-pointer transition-all
@@ -140,7 +143,7 @@ export default function DragDropImageZone({
         {/* Edit Button */}
         <button
           type="button"
-          onClick={handleClick}
+          onClick={(e) => handleClick(e)}
           disabled={disabled}
           className={`
             absolute bottom-1 right-1 w-10 h-10 bg-brand-green text-white rounded-full 

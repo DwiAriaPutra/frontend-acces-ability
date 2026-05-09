@@ -90,18 +90,16 @@ export default function DragDropZone({
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!disabled) {
-      setIsDragging(true);
-    }
-  };
-
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,11 +108,16 @@ export default function DragDropZone({
       const file = files[0];
       if (validateFile(file)) {
         onFileSelected(file);
+        // Reset input value so same file can be selected again
+        e.target.value = '';
       }
     }
   };
 
-  const handleClick = () => {
+  const handleClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     if (!disabled) {
       inputRef.current?.click();
     }
@@ -127,8 +130,8 @@ export default function DragDropZone({
       <div
         onDrop={handleDrop}
         onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
         onClick={handleClick}
         className={`
           border-2 border-dashed rounded-2xl transition-all cursor-pointer
@@ -141,7 +144,6 @@ export default function DragDropZone({
       >
         <input
           ref={inputRef}
-          id="file-input"
           type="file"
           accept={accept}
           className="hidden"
@@ -182,12 +184,14 @@ export default function DragDropZone({
 
         {/* Upload button */}
         {!selectedFile && (
-          <label htmlFor="file-input" className="cursor-pointer">
-            <span className="bg-brand-green hover:bg-green-600 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 transition-all font-semibold shadow-md inline-flex">
-              <span className="material-symbols-outlined text-sm">upload</span>
-              Pilih File
-            </span>
-          </label>
+          <button
+            type="button"
+            onClick={(e) => handleClick(e)}
+            className="bg-brand-green hover:bg-green-600 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 transition-all font-semibold shadow-md inline-flex"
+          >
+            <span className="material-symbols-outlined text-sm">upload</span>
+            Pilih File
+          </button>
         )}
 
         {/* Clear button if file selected */}
