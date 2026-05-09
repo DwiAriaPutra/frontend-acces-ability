@@ -152,11 +152,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center px-4 py-12 relative">
+    <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center px-4 py-6 sm:py-12 relative">
       {/* Back to Home Button */}
       <Link 
         href="/" 
-        className="absolute top-8 left-8 flex items-center gap-2 text-gray-600 hover:text-brand-green transition-colors font-medium"
+        className="mb-6 self-start sm:absolute sm:top-8 sm:left-8 sm:mb-0 flex items-center gap-2 text-gray-600 hover:text-brand-green transition-colors font-medium"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 18-6-6 6-6"/>
@@ -164,9 +164,9 @@ export default function RegisterPage() {
         Kembali ke Beranda
       </Link>
 
-      <div className="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Buat Akun Baru</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Buat Akun Baru</h1>
           <p className="text-gray-500">Daftar sekarang untuk mulai menggunakan layanan ACCESS-ABILITY.</p>
         </div>
 

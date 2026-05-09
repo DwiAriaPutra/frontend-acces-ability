@@ -342,7 +342,7 @@ export default function PermintaanBookingPage() {
 
   if (unauthorized) {
     return (
-      <div className="p-8 max-w-3xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
           <h2 className="text-2xl font-bold text-red-900 mb-2">Akses Ditolak</h2>
           <p className="text-red-700">
@@ -354,7 +354,7 @@ export default function PermintaanBookingPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 text-sm flex items-start justify-between gap-4">
           <div>{error}</div>
@@ -364,7 +364,7 @@ export default function PermintaanBookingPage() {
         </div>
       )}
 
-      <div className="mb-8 flex justify-between items-end">
+      <div className="mb-8 flex flex-col lg:flex-row lg:justify-between lg:items-end gap-5">
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Permintaan Booking
@@ -373,14 +373,14 @@ export default function PermintaanBookingPage() {
             Kelola jadwal dan konfirmasi permintaan layanan terbaru dari klien Anda.
           </p>
         </div>
-        <div className="flex gap-3 items-center flex-wrap">
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:w-auto lg:items-center lg:flex-wrap">
           <select
             value={statusFilter}
             onChange={(e) => {
               setCurrentPage(1);
               setStatusFilter(e.target.value);
             }}
-            className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
           >
             <option value="all">Semua Status</option>
             <option value="pending">Menunggu</option>
@@ -395,7 +395,7 @@ export default function PermintaanBookingPage() {
               setCurrentPage(1);
               setDateRangeFilter(e.target.value);
             }}
-            className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
           >
             <option value="all">Semua Waktu</option>
             <option value="today">Hari Ini</option>
@@ -409,7 +409,7 @@ export default function PermintaanBookingPage() {
               setCurrentPage(1);
               setPageLimit(Number(e.target.value));
             }}
-            className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
           >
             <option value={5}>5 per halaman</option>
             <option value={10}>10 per halaman</option>
@@ -417,7 +417,7 @@ export default function PermintaanBookingPage() {
             <option value={50}>50 per halaman</option>
           </select>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">
+          <button className="flex w-full items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors sm:col-span-2 lg:w-auto">
             <span className="material-symbols-outlined text-lg">download</span>
             Ekspor PDF
           </button>
@@ -464,8 +464,8 @@ export default function PermintaanBookingPage() {
         <div className="p-6 border-b border-gray-50">
           <h3 className="text-xl font-bold text-gray-900">Daftar Antrean</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+        <div className="overflow-x-auto md:overflow-visible">
+          <table className="responsive-data-table w-full border-collapse">
             <thead>
               <tr className="text-left bg-gray-50/50">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -507,7 +507,7 @@ export default function PermintaanBookingPage() {
 
                   return (
                     <tr key={booking.id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5" data-label="Klien">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold overflow-hidden">
                             {booking.user?.image_url ? (
@@ -520,7 +520,7 @@ export default function PermintaanBookingPage() {
                               initials
                             )}
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-sm font-bold text-gray-900">
                               {clientName}
                             </p>
@@ -530,14 +530,14 @@ export default function PermintaanBookingPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5" data-label="Layanan">
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-gray-700">
                             {booking.service_type?.name || "Layanan"}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5" data-label="Tanggal & Waktu">
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-gray-700">
                             {formatBookingDate(booking.booking_date)}
@@ -547,13 +547,13 @@ export default function PermintaanBookingPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-5" data-label="Status">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${statusBadge.className}`}>
                           {statusBadge.label}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-right">
-                        <div className="flex justify-end gap-2">
+                      <td className="px-6 py-5 text-right" data-label="Aksi">
+                        <div className="flex flex-wrap justify-start md:justify-end gap-2">
                           {booking.status === "pending" ? (
                             <>
                               <button
@@ -745,8 +745,8 @@ export default function PermintaanBookingPage() {
       </div>
 
       {rejectModalBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-0 sm:px-4">
+          <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-white p-5 sm:p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <h3 className="text-xl font-bold text-gray-900">Tolak Booking</h3>
@@ -810,7 +810,7 @@ export default function PermintaanBookingPage() {
               <div>{rejectReason.trim().length} karakter</div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
               <button
                 onClick={() => {
                   setRejectModalBooking(null);
@@ -833,7 +833,7 @@ export default function PermintaanBookingPage() {
       )}
       {(detailModalBooking || isLoadingDetail) && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-0 sm:px-4"
           onClick={() => {
             setDetailModalBooking(null);
             setBookingDetail(null);
@@ -841,10 +841,10 @@ export default function PermintaanBookingPage() {
           }}
         >
           <div
-            className="w-full max-w-2xl max-h-[90vh] rounded-3xl bg-white shadow-2xl flex flex-col overflow-hidden"
+            className="w-full max-w-2xl max-h-[92vh] rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-100 flex-shrink-0">
+            <div className="p-5 sm:p-6 border-b border-gray-100 flex-shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">Detail & Riwayat Booking</h3>
@@ -863,7 +863,7 @@ export default function PermintaanBookingPage() {
               </div>
             </div>
 
-            <div className="overflow-y-auto flex-1 p-6">
+            <div className="overflow-y-auto flex-1 p-5 sm:p-6">
 
               {isLoadingDetail ? (
                 <div className="py-10 text-center text-gray-500">Memuat detail...</div>
@@ -871,7 +871,7 @@ export default function PermintaanBookingPage() {
                 <div className="space-y-6">
                   <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
                     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-4">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div>
                           <p className="text-xs uppercase tracking-wider text-gray-500">Booking</p>
                           <p className="text-lg font-bold text-gray-900">{bookingDetail.booking_code || bookingDetail.id}</p>

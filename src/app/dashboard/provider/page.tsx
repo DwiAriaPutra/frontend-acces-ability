@@ -115,7 +115,7 @@ export default function ProviderDashboardPage() {
 
   if (unauthorized) {
     return (
-      <section className="p-8 max-w-7xl mx-auto">
+      <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
           <h2 className="text-2xl font-bold text-red-900 mb-2">
             Akses Ditolak
@@ -132,7 +132,7 @@ export default function ProviderDashboardPage() {
   }
 
   return (
-    <section className="p-8 space-y-8 max-w-7xl mx-auto">
+    <section className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8 max-w-7xl mx-auto">
       {/* Error Banner */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4">
@@ -150,14 +150,14 @@ export default function ProviderDashboardPage() {
         </div>
       )}
       {/* Hero Banner Section */}
-      <div className="relative h-64 rounded-3xl overflow-hidden shadow-lg">
+      <div className="relative min-h-64 rounded-3xl overflow-hidden shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-800/70 to-transparent z-10"></div>
         <img
           alt="Healthcare Background"
           className="absolute inset-0 w-full h-full object-cover"
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7rfahyaaauh3t3QtQhB7d_S8ufWwtB-O7pPdKP2wNDc8_TVBafADfR9crUfHeU6FY2OUdC69gdBQJaypbklpCJdNiyujPIOXtOIss8equO535zC_3ILf21KVAf5NmRjH01esGaTmHwHAbGF3lgnQ1tNtkh16KgSKgXlYuFnSUzt1psMeqMgvNYEtx_01boAoh11VndLcPGTHqgWeTUhlqp9VgNB1d-CNeF2FZC_iLqya-rsGkX08ByS0WoD7uKpLFPNuraVbERzw"
         />
-        <div className="relative z-20 h-full flex flex-col justify-center px-12 text-white">
+        <div className="relative z-20 min-h-64 flex flex-col justify-center px-6 sm:px-8 lg:px-12 py-8 text-white">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-4 border border-white/30">
             <span
               className="material-symbols-outlined text-sm"
@@ -169,10 +169,10 @@ export default function ProviderDashboardPage() {
               Terverifikasi
             </span>
           </div>
-          <h2 className="text-4xl font-bold mb-2">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-2">
             Selamat Datang Kembali, {userName.split(" ")[0]}
           </h2>
-          <p className="text-white/80 max-w-md text-lg">
+          <p className="text-white/80 max-w-md text-base lg:text-lg">
             Pantau jadwal harian Anda dan berikan perawatan terbaik untuk pasien
             hari ini.
           </p>
@@ -351,13 +351,13 @@ export default function ProviderDashboardPage() {
                   return (
                     <div
                       key={booking.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex min-w-0 items-center gap-4">
                         <div className="w-12 h-12 rounded-xl overflow-hidden bg-white flex items-center justify-center text-green-700 font-bold shadow-sm">
                           {initials}
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <h4 className="font-bold text-gray-900">
                             Booking #{booking.id.substring(0, 8).toUpperCase()}
                           </h4>
@@ -369,7 +369,7 @@ export default function ProviderDashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-row sm:flex-col items-start sm:items-end gap-2">
                         <span
                           className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full ${
                             booking.status === "pending"
@@ -396,7 +396,7 @@ export default function ProviderDashboardPage() {
 
       {/* Support/Action Banner */}
       <div className="bg-blue-50 border border-blue-100 p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
             <span className="material-symbols-outlined text-blue-600 text-3xl">
               support_agent
@@ -411,7 +411,7 @@ export default function ProviderDashboardPage() {
             </p>
           </div>
         </div>
-        <button className="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all active:scale-95 whitespace-nowrap">
+        <button className="w-full sm:w-auto bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all active:scale-95 whitespace-nowrap">
           Hubungi Support
         </button>
       </div>

@@ -203,7 +203,7 @@ export default function DashboardLayout({
       `,
         }}
       />
-      <div className="flex">
+      <div className="flex min-w-0">
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div
@@ -257,8 +257,8 @@ export default function DashboardLayout({
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1">
-          <header className="sticky top-0 z-30 flex items-center px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
+        <div className="flex-1 min-w-0">
+          <header className="sticky top-0 z-30 flex items-center px-4 sm:px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
             {/* Hamburger Button - Mobile Only */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -270,8 +270,8 @@ export default function DashboardLayout({
 
             <div className="flex-1"></div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+              <div className="hidden sm:flex items-center gap-3">
                 <span className="material-symbols-outlined text-gray-400 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 cursor-pointer">
                   notifications
                 </span>
@@ -279,8 +279,8 @@ export default function DashboardLayout({
                   help_outline
                 </span>
               </div>
-              <div className="relative flex items-center gap-3 pl-6 border-l border-gray-200">
-                <div className="text-right">
+              <div className="relative flex items-center gap-3 sm:pl-6 sm:border-l border-gray-200 min-w-0">
+                <div className="hidden sm:block text-right min-w-0">
                   <p className="font-bold text-gray-900">{userName}</p>
                   <div className="flex items-center justify-end gap-1">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -330,11 +330,11 @@ export default function DashboardLayout({
               </div>
             </div>
           </header>
-          <main>{children}</main>
+          <main className="min-w-0 overflow-x-hidden">{children}</main>
         </div>
       </div>
       {/* FAB */}
-      <button className="fixed bottom-8 right-8 w-14 h-14 bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-700 transition-all z-50">
+      <button className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 w-12 h-12 sm:w-14 sm:h-14 bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-700 transition-all z-50">
         <span className="material-symbols-outlined text-3xl">
           support_agent
         </span>
