@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/api";
+import Toast from "@/components/Toast";
+import { registerForPush, startForegroundMessageListener } from "@/utils/fcm";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +18,7 @@ export default function DashboardLayout({
   const [userImage, setUserImage] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [toast, setToast] = useState<null | { message: string; type?: "info" | "success" | "error" }>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -74,6 +77,64 @@ export default function DashboardLayout({
       window.removeEventListener("storage", handleUserUpdated);
     };
   }, []);
+  useEffect(() => {
+    const runPushRegistration = async () => {
+      if (typeof window === "undefined") return;
+
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return;
+
+      const promptedKey = "push-permission-prompted";
+      const alreadyPrompted = localStorage.getItem(promptedKey) === "true";
+
+      // Only auto-run once after login on dashboard pages.
+      if (alreadyPrompted) return;
+      if (!pathname?.startsWith("/dashboard")) return;
+
+      localStorage.setItem(promptedKey, "true");
+
+      try {
+        const result = await registerForPush();
+        console.log('[push] registerForPush result', result);
+        if (result?.success) {
+          setToast({ message: "Notifikasi diaktifkan", type: "success" });
+        } else if (result?.message === "permission_denied") {
+          setToast({ message: "Izin notifikasi ditolak", type: "info" });
+        } else {
+          setToast({ message: result?.message || "Gagal mengaktifkan notifikasi", type: "error" });
+        }
+      } catch (err) {
+        console.warn("[push] register failed", err);
+        setToast({ message: "Gagal mengaktifkan notifikasi", type: "error" });
+      }
+    };
+
+    runPushRegistration();
+  }, [pathname]);
+
+  useEffect(() => {
+    let unsubscribe = () => {};
+
+    const setupForegroundListener = async () => {
+      if (!pathname?.startsWith("/dashboard")) {
+        return;
+      }
+
+      unsubscribe = await startForegroundMessageListener({
+        onMessage: (payload) => {
+          const title = payload?.notification?.title || "Notifikasi Baru";
+          const body = payload?.notification?.body || "Anda menerima pesan baru.";
+          setToast({ message: `${title}: ${body}`, type: "info" });
+        },
+      });
+    };
+
+    setupForegroundListener();
+
+    return () => {
+      unsubscribe();
+    };
+  }, [pathname]);
 
   const userMenuItems = [
     { name: "Dashboard", icon: "dashboard", href: "/dashboard/user" },
@@ -333,6 +394,13 @@ export default function DashboardLayout({
           <main className="min-w-0 overflow-x-hidden">{children}</main>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       {/* FAB */}
       <button className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 w-12 h-12 sm:w-14 sm:h-14 bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-700 transition-all z-50">
         <span className="material-symbols-outlined text-3xl">
