@@ -1,4 +1,5 @@
 import React from "react";
+import { formatLocalDate } from "@/utils/date";
 
 type Review = {
   id: string;
@@ -22,7 +23,7 @@ export default function ReviewList({ items }: { items: Review[] }) {
               <span className="text-gray-300">{"★".repeat(Math.max(5 - item.rating, 0))}</span>
             </div>
             {item.created_at ? (
-              <span className="text-xs text-gray-500">{new Date(item.created_at).toLocaleDateString("id-ID")}</span>
+              <span className="text-xs text-gray-500">{formatLocalDate(item.created_at)}</span>
             ) : null}
           </div>
           {item.comment ? (

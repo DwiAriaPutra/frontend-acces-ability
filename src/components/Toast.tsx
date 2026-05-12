@@ -25,7 +25,7 @@ export default function Toast({
     type === "success" ? "bg-green-600" : type === "error" ? "bg-red-600" : "bg-gray-800";
 
   return (
-    <div className={`fixed right-4 bottom-6 z-50 max-w-sm ${bg} text-white px-4 py-3 rounded-lg shadow-lg`}>
+    <div className={`fixed right-4 top-6 z-50 max-w-sm ${bg} text-white px-4 py-3 rounded-lg shadow-lg`}>
       <div className="text-sm">{message}</div>
     </div>
   );

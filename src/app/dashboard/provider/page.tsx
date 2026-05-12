@@ -108,9 +108,9 @@ export default function ProviderDashboardPage() {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffMins < 1) return "Baru saja";
-    if (diffMins < 60) return `${diffMins} menit yang lalu`;
-    if (diffHours < 24) return `${diffHours} jam yang lalu`;
-    return `${diffDays} hari yang lalu`;
+    if (diffMins < 60) return `${diffMins} menit lalu`;
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+    return `${diffDays} hari lalu`;
   };
 
   if (unauthorized) {
