@@ -63,8 +63,8 @@ const Header = () => {
     };
   }, []);
 
-  const handleLogout = () => {
-    const result = logout();
+  const handleLogout = async () => {
+    const result = await logout();
     if (result.success) {
       setIsLoggedIn(false);
       setUser(null);

@@ -227,8 +227,8 @@ export default function DashboardLayout({
     }
   }, [userRole, pathname, router]);
 
-  const handleLogout = () => {
-    const result = logout();
+  const handleLogout = async () => {
+    const result = await logout();
     if (result.success) {
       setIsAccountMenuOpen(false);
       router.push("/");

@@ -85,8 +85,8 @@ export default function ProfilPage() {
       .substring(0, 2);
   };
 
-  const handleLogout = () => {
-    const result = logout();
+  const handleLogout = async () => {
+    const result = await logout();
     if (result.success) {
       router.push("/");
     }

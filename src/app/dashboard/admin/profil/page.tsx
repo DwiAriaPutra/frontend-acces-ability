@@ -43,8 +43,8 @@ export default function AdminProfilePage() {
     }
   }, [router]);
 
-  const handleLogout = () => {
-    const result = logout();
+  const handleLogout = async () => {
+    const result = await logout();
     if (result.success) {
       router.push('/');
     }

@@ -12,6 +12,7 @@ import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { handleGoogleCallback } from '@/api';
+import { registerForPush } from '@/utils/fcm';
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -50,6 +51,12 @@ function GoogleCallbackContent() {
             providerProfile: result.data.providerProfile
           }));
           console.log('[GoogleCallback] Login successful, redirecting to dashboard');
+
+          try {
+            void registerForPush().then((r) => console.log('[GoogleCallback] registerForPush', r));
+          } catch (e) {
+            console.error('[GoogleCallback] registerForPush error', e);
+          }
           
           // Determine redirect path; only send providers to provider dashboard when verified
           let redirectPath = '/';

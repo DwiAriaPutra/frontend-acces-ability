@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getGoogleAuthUrl, loginUser } from '@/api';
+import { registerForPush } from '@/utils/fcm';
 
 type LoginFormState = {
   email: string;
@@ -80,6 +81,12 @@ export default function LoginPage() {
         ...result.data.user,
         providerProfile: result.data.providerProfile
       }));
+
+      try {
+        void registerForPush().then((r) => console.log('[Login] registerForPush', r));
+      } catch (e) {
+        console.error('[Login] registerForPush error', e);
+      }
 
       // If provider, only redirect to provider dashboard when verified.
       if (result.data.user.role === 'provider') {

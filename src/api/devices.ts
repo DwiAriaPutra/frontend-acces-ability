@@ -41,3 +41,37 @@ export const registerDevice = async (payload: {
     };
   }
 };
+
+/**
+ * Unregister device token on logout
+ * @param token FCM token to unregister
+ */
+export const unregisterDevice = async (token: string) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+
+    const response = await fetch(`${BACKEND_URL}/api/v1/devices/unregister`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("[devices.unregister] failed", response.status, text);
+      return { success: false, message: `HTTP ${response.status}` };
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.error("[devices.unregister] error", err);
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+};

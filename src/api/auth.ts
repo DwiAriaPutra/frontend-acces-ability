@@ -567,11 +567,36 @@ export const updateMeMultipart = async (
 };
 
 /**
- * Logout current user by clearing local storage
+ * Logout current user: unregister all device tokens, then clear local storage
+ * Device tokens are deactivated on backend, preventing push notifications after logout
  * @returns Success message
  */
-export const logout = (): { success: boolean; message: string } => {
+export const logout = async (): Promise<{ success: boolean; message: string }> => {
   try {
+    console.log("[API Debug] logout: Unregistering all device tokens");
+    
+    // Try to unregister all device tokens from backend (non-blocking if fails)
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/v1/devices/unregister-all`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          console.log("[API Debug] logout: Device tokens unregistered", result);
+        } else {
+          console.warn("[API Debug] logout: Unregister failed with status", response.status);
+        }
+      } catch (err) {
+        console.error("[API Debug] logout: Device unregister error (non-blocking)", err);
+      }
+    }
+    
     console.log("[API Debug] logout: Clearing local storage");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
