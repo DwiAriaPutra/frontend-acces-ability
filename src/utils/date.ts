@@ -12,11 +12,11 @@ Main Functions: formatRelativeTime, formatLocalDate, formatDateTime.
  */
 export const formatRelativeTime = (dateString?: string | null): string => {
   if (!dateString) return "";
-  
+
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
-    
+
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -44,11 +44,11 @@ export const formatRelativeTime = (dateString?: string | null): string => {
  */
 export const formatLocalDate = (dateString?: string | null): string => {
   if (!dateString) return "";
-  
+
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
-    
+
     return date.toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
@@ -66,11 +66,11 @@ export const formatLocalDate = (dateString?: string | null): string => {
  */
 export const formatDateTime = (dateString?: string | null): string => {
   if (!dateString) return "";
-  
+
   try {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
-    
+
     return date.toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
