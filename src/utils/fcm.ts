@@ -353,7 +353,7 @@ export const startForegroundMessageListener = async (
           const notification = new Notification(title, {
             body,
             icon: payload?.notification?.icon || "/favicon.ico",
-            tag: payload?.notification?.tag || payload?.data?.tag,
+            tag: payload?.data?.tag,
             data: url ? { url } : payload?.data,
           });
           if (url) {
