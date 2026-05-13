@@ -413,12 +413,6 @@ export default function DashboardLayout({
           onClose={() => setToast(null)}
         />
       )}
-      {/* FAB */}
-      <button className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 w-12 h-12 sm:w-14 sm:h-14 bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-700 transition-all z-50">
-        <span className="material-symbols-outlined text-3xl">
-          support_agent
-        </span>
-      </button>
     </div>
   );
 }
