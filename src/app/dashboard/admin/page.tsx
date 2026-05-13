@@ -57,7 +57,9 @@ export default function AdminDashboardPage() {
           </span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Akses Ditolak</h1>
-        <p className="text-gray-600">Halaman admin hanya untuk pengguna dengan role admin.</p>
+        <p className="text-gray-600">
+          Halaman admin hanya untuk pengguna dengan role admin.
+        </p>
         <Link href="/dashboard/user" className="text-green-600 font-semibold">
           Kembali ke dashboard user
         </Link>
@@ -69,9 +71,12 @@ export default function AdminDashboardPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto space-y-6 lg:space-y-8">
       {/* Header */}
       <section className="space-y-4">
-        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+          Admin Dashboard
+        </h1>
         <p className="text-gray-600">
-          Selamat datang, {userName}. Kelola verifikasi provider dan sistem dari sini.
+          Selamat datang, {userName}. Kelola verifikasi provider dan sistem dari
+          sini.
         </p>
       </section>
 

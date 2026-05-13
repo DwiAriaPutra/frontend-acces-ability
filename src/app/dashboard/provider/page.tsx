@@ -74,17 +74,25 @@ export default function ProviderDashboardPage() {
 
   const totalBookings = bookings.length;
   const pendingBookings = bookings.filter((b) => b.status === "pending").length;
-  const acceptedBookings = bookings.filter((b) => b.status === "accepted").length;
+  const acceptedBookings = bookings.filter(
+    (b) => b.status === "accepted"
+  ).length;
   const completedBookings = bookings.filter((b) => b.status === "completed");
   const completedCount = completedBookings.length;
 
   const totalEarnings = completedBookings.reduce((sum, b) => {
-    const price = typeof b.total_price === "string" ? parseFloat(b.total_price) : b.total_price;
+    const price =
+      typeof b.total_price === "string"
+        ? parseFloat(b.total_price)
+        : b.total_price;
     return sum + (price || 0);
   }, 0);
 
   const recentBookings = [...bookings]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
     .slice(0, 5);
 
   const formatCurrency = (amount: number) => {
@@ -183,7 +191,9 @@ export default function ProviderDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {/* Total Booking */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-          <span className="text-gray-500 text-sm font-medium">Total Booking</span>
+          <span className="text-gray-500 text-sm font-medium">
+            Total Booking
+          </span>
           <div className="mt-4 flex items-end justify-between">
             <span className="text-3xl font-black text-gray-900">
               {isLoading ? "..." : totalBookings}
@@ -232,11 +242,17 @@ export default function ProviderDashboardPage() {
         {/* Total Pendapatan */}
         <div className="bg-green-600 p-6 rounded-2xl shadow-md flex flex-col justify-between text-white col-span-1 md:col-span-2">
           <div className="flex justify-between items-start">
-            <span className="text-sm font-medium opacity-90">Total Pendapatan</span>
-            <span className="material-symbols-outlined opacity-80">payments</span>
+            <span className="text-sm font-medium opacity-90">
+              Total Pendapatan
+            </span>
+            <span className="material-symbols-outlined opacity-80">
+              payments
+            </span>
           </div>
           <div className="mt-4">
-            <span className="text-sm font-medium opacity-80">Total Akumulasi</span>
+            <span className="text-sm font-medium opacity-80">
+              Total Akumulasi
+            </span>
             <h3 className="text-3xl font-black tracking-tight mt-1">
               {isLoading ? "..." : formatCurrency(totalEarnings)}
             </h3>
@@ -271,10 +287,7 @@ export default function ProviderDashboardPage() {
                   className="material-symbols-outlined text-amber-400 text-3xl"
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
-                  {star <=
-                  Math.floor(
-                    Number(providerProfile?.avg_rating) || 5
-                  )
+                  {star <= Math.floor(Number(providerProfile?.avg_rating) || 5)
                     ? "star"
                     : "star_outline"}
                 </span>

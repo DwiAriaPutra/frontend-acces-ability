@@ -210,9 +210,12 @@ export default function Home() {
               Platform yang menghubungkan pengguna dengan penyedia layanan
               pendamping disabilitas secara cepat dan mudah.
             </p>
-            <button className="bg-white text-brand-green px-8 py-3 rounded-md font-bold hover:bg-gray-100 transition inline-block">
+            <Link
+              href="/login"
+              className="bg-white text-brand-green px-8 py-3 rounded-md font-bold hover:bg-gray-100 transition inline-block text-center"
+            >
               Cari Pendamping
-            </button>
+            </Link>
           </div>
         </div>
       </section>

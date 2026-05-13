@@ -347,7 +347,7 @@ export default function CariProviderPage() {
             {filteredProviders.map((provider) => (
               <div
                 key={provider.id}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+                className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group"
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -361,7 +361,7 @@ export default function CariProviderPage() {
                     </span>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="flex flex-1 flex-col p-6">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-gray-800 text-lg line-clamp-1">
                       {getProviderName(provider)}
@@ -397,21 +397,23 @@ export default function CariProviderPage() {
                       </span>
                     </div>
                   </div>
-                  {getProviderSpecializations(provider).length > 1 ? (
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {getProviderSpecializations(provider).slice(0, 3).map((name) => (
-                        <span
-                          key={name}
-                          className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600"
-                        >
-                          {name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
+                  <div className="mb-6 min-h-[2rem]">
+                    {getProviderSpecializations(provider).length > 1 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {getProviderSpecializations(provider).slice(0, 3).map((name) => (
+                          <span
+                            key={name}
+                            className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600"
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                   <Link
                     href={`/dashboard/user/cari-provider/${provider.id}`}
-                    className="block w-full py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 active:scale-95 text-center"
+                    className="mt-auto block w-full rounded-xl bg-green-600 py-3 text-center text-sm font-bold text-white shadow-lg shadow-green-600/20 transition-all hover:bg-green-700 active:scale-95"
                   >
                     Lihat Profil
                   </Link>
