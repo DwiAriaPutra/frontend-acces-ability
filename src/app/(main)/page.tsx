@@ -9,31 +9,24 @@ export default function Home() {
 
   useEffect(() => {
     // Check if user is already logged in
-    const user = sessionStorage.getItem("user");
-    const token = sessionStorage.getItem("accessToken");
+    const user = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
 
     if (user && token) {
       try {
         const parsedUser = JSON.parse(user);
-        // Redirect based on user role and verification status for providers
+        // Redirect logged-in users away from the landing page based on role.
         if (parsedUser.role === "provider") {
-          const isVerified = !!(
-            parsedUser?.providerProfile?.verification_status === "verified" ||
-            parsedUser?.verification_status === "verified"
-          );
-          if (isVerified) {
-            router.push("/dashboard/provider");
-          } else {
-            // Keep provider who is not yet verified on landing page
-            return;
-          }
+          router.replace("/dashboard/provider");
         } else if (parsedUser.role === "admin") {
-          router.push("/dashboard/admin");
+          router.replace("/dashboard/admin");
         } else {
-          router.push("/dashboard/user");
+          router.replace("/dashboard/user");
         }
       } catch (error) {
         console.error("Error parsing user data:", error);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
       }
     }
   }, [router]);

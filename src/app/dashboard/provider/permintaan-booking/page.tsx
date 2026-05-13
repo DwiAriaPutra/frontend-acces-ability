@@ -20,6 +20,7 @@ import {
   getBookingDetail,
   getBookingHistory,
 } from "@/api";
+import { showAppNotification } from "@/utils/notifications";
 
 export default function PermintaanBookingPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function PermintaanBookingPage() {
   const minRejectLength = 15;
 
   const fetchBookings = async (page = currentPage, status = statusFilter, dateRange = dateRangeFilter) => {
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       setIsLoading(false);
@@ -76,7 +77,7 @@ export default function PermintaanBookingPage() {
   };
 
   useEffect(() => {
-    const userStr = sessionStorage.getItem("user");
+    const userStr = localStorage.getItem("user");
 
     if (!userStr) {
       setUnauthorized(true);
@@ -242,7 +243,7 @@ export default function PermintaanBookingPage() {
   };
 
   const handleAccept = async (bookingId: string) => {
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;
@@ -257,6 +258,11 @@ export default function PermintaanBookingPage() {
       }
 
       updateBookingStatusLocally(bookingId, "accepted");
+      showAppNotification("Booking Diterima", {
+        body: "Permintaan booking berhasil diterima. Pengguna akan mendapatkan pembaruan status.",
+        tag: `booking-accepted-${bookingId}`,
+        url: "/dashboard/provider/permintaan-booking",
+      });
     } catch (_e) {
       setError("Gagal menerima booking. Silakan coba lagi.");
     } finally {
@@ -265,7 +271,7 @@ export default function PermintaanBookingPage() {
   };
 
   const handleComplete = async (bookingId: string) => {
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;
@@ -280,6 +286,11 @@ export default function PermintaanBookingPage() {
       }
 
       updateBookingStatusLocally(bookingId, "completed");
+      showAppNotification("Layanan Selesai", {
+        body: "Booking berhasil ditandai selesai. Pengguna dapat melanjutkan ke ulasan.",
+        tag: `booking-completed-${bookingId}`,
+        url: "/dashboard/provider/permintaan-booking",
+      });
     } catch (_e) {
       setError("Gagal menyelesaikan booking. Silakan coba lagi.");
     } finally {
@@ -290,7 +301,7 @@ export default function PermintaanBookingPage() {
   const handleRejectConfirm = async () => {
     if (!rejectModalBooking) return;
 
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;
@@ -305,6 +316,11 @@ export default function PermintaanBookingPage() {
       }
 
       updateBookingStatusLocally(rejectModalBooking.id, "cancelled");
+      showAppNotification("Booking Ditolak", {
+        body: "Permintaan booking berhasil ditolak. Pengguna akan mendapatkan pembaruan status.",
+        tag: `booking-rejected-${rejectModalBooking.id}`,
+        url: "/dashboard/provider/permintaan-booking",
+      });
       setRejectModalBooking(null);
       setRejectReason("");
     } catch (_e) {
@@ -315,7 +331,7 @@ export default function PermintaanBookingPage() {
   };
 
   const openDetailModal = async (bookingId: string) => {
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;

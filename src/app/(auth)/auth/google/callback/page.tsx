@@ -45,8 +45,8 @@ function GoogleCallbackContent() {
         const result = await handleGoogleCallback(code);
 
         if (result.success && result.data) {
-          sessionStorage.setItem("accessToken", result.data.token);
-          sessionStorage.setItem("user", JSON.stringify({
+          localStorage.setItem("accessToken", result.data.token);
+          localStorage.setItem("user", JSON.stringify({
             ...result.data.user,
             providerProfile: result.data.providerProfile
           }));
@@ -58,22 +58,10 @@ function GoogleCallbackContent() {
             console.error('[GoogleCallback] registerForPush error', e);
           }
           
-          // Determine redirect path; only send providers to provider dashboard when verified
+          // Determine redirect path based on role.
           let redirectPath = '/';
           if (result.data.user.role === 'provider') {
-            const isVerified = !!result.data.providerProfile?.is_verified;
-            if (isVerified) {
-              redirectPath = '/dashboard/provider';
-            } else {
-              // Show error message for unverified provider
-              setError('Akun Anda masih menunggu persetujuan dari admin. Silakan hubungi support atau coba kembali nanti.');
-              setIsLoading(false);
-              // Redirect to landing page after 3 seconds
-              setTimeout(() => {
-                router.push('/');
-              }, 3000);
-              return;
-            }
+            redirectPath = '/dashboard/provider';
           } else if (result.data.user.role === 'admin') {
             redirectPath = '/dashboard/admin';
           } else {

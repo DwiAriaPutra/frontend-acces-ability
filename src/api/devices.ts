@@ -14,7 +14,7 @@ export const registerDevice = async (payload: {
   metadata?: any;
 }) => {
   try {
-    const accessToken = sessionStorage.getItem("accessToken");
+    const accessToken = localStorage.getItem("accessToken");
 
     const response = await fetch(`${BACKEND_URL}/api/v1/devices/register`, {
       method: "POST",
@@ -48,7 +48,7 @@ export const registerDevice = async (payload: {
  */
 export const unregisterDevice = async (token: string) => {
   try {
-    const accessToken = sessionStorage.getItem("accessToken");
+    const accessToken = localStorage.getItem("accessToken");
 
     const response = await fetch(`${BACKEND_URL}/api/v1/devices/unregister`, {
       method: "POST",

@@ -20,6 +20,22 @@ type ForegroundListenerOptions = {
   onMessage?: (payload: any) => void;
 };
 
+const getPayloadTitle = (payload: any) =>
+  payload?.notification?.title ||
+  payload?.data?.title ||
+  payload?.data?.notification_title ||
+  "Notifikasi Baru";
+
+const getPayloadBody = (payload: any) =>
+  payload?.notification?.body ||
+  payload?.data?.body ||
+  payload?.data?.message ||
+  payload?.data?.notification_body ||
+  "Anda menerima pesan baru.";
+
+const getPayloadUrl = (payload: any) =>
+  payload?.fcmOptions?.link || payload?.data?.url || payload?.data?.link || "";
+
 const toUint8ArrayFromBase64Url = (base64Url: string) => {
   const padded = `${base64Url}${"=".repeat((4 - (base64Url.length % 4)) % 4)}`;
   const base64 = padded.replace(/-/g, "+").replace(/_/g, "/");
@@ -325,18 +341,27 @@ export const startForegroundMessageListener = async (
     const unsubscribe = onMessage(messaging, (payload) => {
       pushLog("[fcm] foreground message received", payload);
 
-      const title = payload?.notification?.title || "Notifikasi Baru";
-      const body = payload?.notification?.body || "Anda menerima pesan baru.";
+      const title = getPayloadTitle(payload);
+      const body = getPayloadBody(payload);
+      const url = getPayloadUrl(payload);
 
       if (
         typeof Notification !== "undefined" &&
         Notification.permission === "granted"
       ) {
         try {
-          new Notification(title, {
+          const notification = new Notification(title, {
             body,
             icon: payload?.notification?.icon || "/favicon.ico",
+            tag: payload?.notification?.tag || payload?.data?.tag,
+            data: url ? { url } : payload?.data,
           });
+          if (url) {
+            notification.onclick = () => {
+              window.focus();
+              window.location.href = url;
+            };
+          }
         } catch (notificationErr) {
           pushLog(
             "[fcm] failed to show foreground notification",

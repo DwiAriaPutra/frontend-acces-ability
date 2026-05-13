@@ -25,8 +25,8 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const syncUser = () => {
-      const userStr = sessionStorage.getItem("user");
-      const token = sessionStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
       const isDashboardRoute = pathname?.startsWith("/dashboard");
 
       if (!userStr || !token) {
@@ -60,17 +60,10 @@ export default function DashboardLayout({
           setUserRole(user.role);
         }
         setUserImage(user?.image_url || null);
-        // If provider and not verified, immediately redirect to landing page
-        const isVerified = !!user?.providerProfile?.is_verified;
-        if (user?.role === "provider" && !isVerified && pathname && pathname.startsWith("/dashboard")) {
-          // use full navigation to avoid race conditions with client-side routers
-          window.location.href = "/";
-          return;
-        }
       } catch (e) {
         console.error("Error parsing user from localStorage", e);
-        sessionStorage.removeItem("accessToken");
-        sessionStorage.removeItem("user");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
         setUserName("User");
         setUserInitials("U");
         setUserImage(null);
@@ -101,7 +94,7 @@ export default function DashboardLayout({
     const runPushRegistration = async () => {
       if (typeof window === "undefined") return;
 
-      const userStr = sessionStorage.getItem("user");
+      const userStr = localStorage.getItem("user");
       if (!userStr) return;
 
       const promptedKey = "push-permission-prompted";
@@ -202,22 +195,9 @@ export default function DashboardLayout({
     // If user role is known, ensure they're on the correct dashboard path
     if (!userRole || !pathname) return;
 
-    // Determine provider verification status from sessionStorage (if present)
-    let isProviderVerified = false;
-    try {
-      const raw = sessionStorage.getItem("user");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        isProviderVerified = !!parsed?.providerProfile?.is_verified;
-      }
-    } catch (e) {
-      // ignore parse errors
-    }
-
-    // If provider and verified but currently on user/admin routes, redirect to provider dashboard
+    // If provider but currently on user/admin routes, redirect to provider dashboard
     if (
       userRole === "provider" &&
-      isProviderVerified &&
       (pathname.startsWith("/dashboard/user") || pathname.startsWith("/dashboard/admin"))
     ) {
       router.replace("/dashboard/provider");
@@ -237,12 +217,6 @@ export default function DashboardLayout({
       (pathname.startsWith("/dashboard/provider") || pathname.startsWith("/dashboard/admin"))
     ) {
       router.replace("/dashboard/user");
-      return;
-    }
-
-    // If provider but NOT verified and currently on provider routes, send them back to landing page
-    if (userRole === "provider" && !isProviderVerified && pathname.startsWith("/dashboard/provider")) {
-      router.replace("/");
       return;
     }
   }, [userRole, pathname, router]);

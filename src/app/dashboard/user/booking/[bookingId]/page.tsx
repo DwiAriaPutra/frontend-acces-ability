@@ -19,6 +19,7 @@ import {
   cancelBooking,
 } from "@/api";
 import ReviewForm from "@/components/ReviewForm";
+import { showAppNotification } from "@/utils/notifications";
 
 const formatDate = (value?: string | null) => {
   if (!value) return "-";
@@ -137,7 +138,7 @@ export default function BookingDetailPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   useEffect(() => {
     const fetchBooking = async () => {
-      const token = sessionStorage.getItem("accessToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         setIsLoggedIn(false);
         setIsLoading(false);
@@ -383,7 +384,7 @@ export default function BookingDetailPage() {
               bookingId={booking.id}
               existingReview={existingReview}
               onCreated={async () => {
-                const token = sessionStorage.getItem("accessToken");
+                const token = localStorage.getItem("accessToken");
                 if (!token) return;
                 const [detail, history] = await Promise.all([
                   getBookingDetail(token, booking.id),
@@ -471,10 +472,15 @@ export default function BookingDetailPage() {
               <button
                 onClick={async () => {
                   setIsCancelling(true);
-                  const token = sessionStorage.getItem("accessToken");
+                  const token = localStorage.getItem("accessToken");
                   if (token && bookingId) {
                     const result = await cancelBooking(token, bookingId, cancelReason);
                     if (result) {
+                      showAppNotification("Booking Dibatalkan", {
+                        body: "Booking berhasil dibatalkan.",
+                        tag: `booking-cancelled-${bookingId}`,
+                        url: "/dashboard/user/booking",
+                      });
                       // Refetch booking detail
                       const [detail, history] = await Promise.all([
                         getBookingDetail(token, bookingId),

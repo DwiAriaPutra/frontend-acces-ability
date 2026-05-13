@@ -25,8 +25,8 @@ const Header = () => {
 
   useEffect(() => {
     const syncUserFromStorage = () => {
-      const userStr = sessionStorage.getItem("user");
-      const token = sessionStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
 
       if (userStr && token) {
         try {
@@ -73,10 +73,12 @@ const Header = () => {
     }
   };
 
-  // Check if user is an unverified provider (show as guest on landing page)
-  const isUnverifiedProvider = user && user.role === 'provider' && !(
-    user.providerProfile?.is_verified
-  );
+  const profileHref =
+    user?.role === 'provider'
+      ? '/dashboard/provider/profil'
+      : user?.role === 'admin'
+        ? '/dashboard/admin/profil'
+        : '/dashboard/user/profil';
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
@@ -101,8 +103,8 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4">
           {isLoading ? (
             <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
-          ) : isLoggedIn && user && !isUnverifiedProvider ? (
-            // Show user menu only for verified providers and other logged-in users
+          ) : isLoggedIn && user ? (
+            // Show user menu for any logged-in role.
             <div className="flex items-center space-x-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-green-100 flex items-center justify-center border border-green-200">
@@ -126,7 +128,7 @@ const Header = () => {
                 <span className="text-sm font-medium text-gray-700">{user.full_name}</span>
               </div>
               <Link 
-                href={user.role === 'provider' ? '/dashboard/provider/profil' : '/dashboard/user/profil'}
+                href={profileHref}
                 className="text-brand-green font-medium text-sm hover:underline"
               >
                 Profil
@@ -139,7 +141,7 @@ const Header = () => {
               </button>
             </div>
           ) : (
-            // Show login/register buttons for guests and unverified providers
+            // Show login/register buttons for guests.
             <>
               <Link href="/register" className="text-brand-green font-medium text-sm">Daftar</Link>
               <Link href="/login" className="bg-brand-green text-white px-6 py-2 rounded-md font-medium text-sm hover:bg-green-600 transition">Masuk</Link>
@@ -174,7 +176,7 @@ const Header = () => {
           <div className="border-t border-gray-100 pt-4">
             {isLoading ? (
               <div className="h-10 w-full bg-gray-200 rounded animate-pulse" />
-            ) : isLoggedIn && user && !isUnverifiedProvider ? (
+            ) : isLoggedIn && user ? (
               <div className="space-y-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden bg-green-100 flex items-center justify-center border border-green-200">
@@ -195,7 +197,7 @@ const Header = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Link
-                    href={user.role === 'provider' ? '/dashboard/provider/profil' : '/dashboard/user/profil'}
+                    href={profileHref}
                     className="rounded-md border border-green-200 px-4 py-2 text-center text-sm font-medium text-brand-green"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

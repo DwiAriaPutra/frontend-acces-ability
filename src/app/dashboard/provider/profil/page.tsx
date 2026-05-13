@@ -109,8 +109,8 @@ export default function ProfileProviderPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const userStr = sessionStorage.getItem("user");
-      const token = sessionStorage.getItem("accessToken");
+      const userStr = localStorage.getItem("user");
+      const token = localStorage.getItem("accessToken");
 
       if (!userStr || !token) {
         setIsLoading(false);
@@ -278,7 +278,7 @@ export default function ProfileProviderPage() {
 
   const handleAddAvailability = async () => {
     setError(null);
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) return setError("Token tidak ditemukan.");
     const created = await createMyAvailability(token, newAvailability);
     if (created) {
@@ -296,7 +296,7 @@ export default function ProfileProviderPage() {
 
   const handleUpdateAvailability = async (id: string, payload: Partial<{ day_of_week: number; start_time: string; end_time: string; is_active: boolean }>) => {
     setError(null);
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) return setError("Token tidak ditemukan.");
     const updated = await updateMyAvailability(token, id, payload);
     if (updated) {
@@ -314,7 +314,7 @@ export default function ProfileProviderPage() {
 
   const handleDeleteAvailability = async (id: string) => {
     setError(null);
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) return setError("Token tidak ditemukan.");
     const ok = await deleteMyAvailability(token, id);
     if (ok) {
@@ -390,7 +390,7 @@ export default function ProfileProviderPage() {
     setError(null);
     setSuccess(null);
 
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setError("Token login tidak ditemukan. Silakan login ulang.");
       return;
@@ -486,7 +486,7 @@ export default function ProfileProviderPage() {
           return;
         }
 
-        const userStr = sessionStorage.getItem("user");
+        const userStr = localStorage.getItem("user");
         const stored = userStr ? JSON.parse(userStr) : {};
         const responseData = userUpdateResult.data as any;
         const updatedUser = responseData?.user || responseData || {};
@@ -505,7 +505,7 @@ export default function ProfileProviderPage() {
           image_url: updatedImageUrl,
         };
 
-        sessionStorage.setItem("user", JSON.stringify(newUser));
+        localStorage.setItem("user", JSON.stringify(newUser));
         window.dispatchEvent(new Event("user-updated"));
         setProfileUser({
           full_name: newUser.full_name || "",
@@ -603,11 +603,11 @@ export default function ProfileProviderPage() {
       setProfileImagePreview("");
       setShowImageUpload(false);
 
-      const userStr = sessionStorage.getItem("user");
+      const userStr = localStorage.getItem("user");
       if (userStr && refreshedProvider) {
         try {
           const storedUser = JSON.parse(userStr);
-          sessionStorage.setItem(
+          localStorage.setItem(
             "user",
             JSON.stringify({
               ...storedUser,
@@ -945,7 +945,7 @@ export default function ProfileProviderPage() {
                           type="button"
                           className="text-xs font-bold text-red-600 hover:underline"
                           onClick={async () => {
-                            const token = sessionStorage.getItem("accessToken");
+                            const token = localStorage.getItem("accessToken");
                             if (!token) return;
                             const deleted = await deleteMyProviderCertificate(token, certification.id);
                             if (deleted) {
