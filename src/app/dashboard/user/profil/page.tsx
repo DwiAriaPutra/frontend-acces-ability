@@ -42,7 +42,7 @@ export default function ProfilPage() {
   const [showImageUpload, setShowImageUpload] = useState(false);
 
   useEffect(() => {
-    const userStr = sessionStorage.getItem("user");
+    const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
         const storedUser = JSON.parse(userStr);
@@ -70,7 +70,7 @@ export default function ProfilPage() {
 
   useEffect(() => {
     const loadBookingStats = async () => {
-      const token = sessionStorage.getItem("accessToken");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         setIsStatsLoading(false);
         return;
@@ -133,7 +133,7 @@ export default function ProfilPage() {
     setError(null);
     setSuccess(null);
 
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setError("Token login tidak ditemukan. Silakan login ulang.");
       return;
@@ -208,9 +208,9 @@ export default function ProfilPage() {
         phone_number: mergedUser.phone === "-" ? "" : mergedUser.phone,
       });
 
-      const storedUserRaw = sessionStorage.getItem("user");
+      const storedUserRaw = localStorage.getItem("user");
       const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : {};
-      sessionStorage.setItem(
+      localStorage.setItem(
         "user",
         JSON.stringify({
           ...storedUser,

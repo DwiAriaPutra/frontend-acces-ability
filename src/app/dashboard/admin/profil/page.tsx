@@ -24,7 +24,7 @@ export default function AdminProfilePage() {
   const [user, setUser] = useState<AdminUser | null>(null);
 
   useEffect(() => {
-    const userStr = sessionStorage.getItem("user");
+    const userStr = localStorage.getItem("user");
     if (!userStr) {
       router.replace('/login');
       return;
@@ -70,49 +70,73 @@ export default function AdminProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="p-8 max-w-[1200px] mx-auto space-y-8">
-      <section className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-green-600">Admin Profile</p>
-        <h1 className="text-4xl font-bold text-gray-900">Profil Admin</h1>
-        <p className="text-gray-600">Kelola identitas akun admin dan keluar dari sesi login bila perlu.</p>
+    <div className="mx-auto max-w-[1200px] space-y-6 p-4 sm:p-6 lg:p-8">
+      <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-green-600">
+              Admin Profile
+            </p>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900 lg:text-4xl">
+                Profil Admin
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+                Kelola identitas akun admin dan keluar dari sesi login bila perlu.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            Kembali
+          </button>
+        </div>
       </section>
 
-      <section className="bg-white border border-gray-100 rounded-3xl shadow-sm p-8 flex flex-col md:flex-row items-center md:items-start gap-8">
-        <div className="w-32 h-32 rounded-full bg-green-50 border-4 border-green-100 flex items-center justify-center overflow-hidden text-green-700 font-bold text-4xl">
-          {user.image_url ? (
-            <img src={user.image_url} alt={user.full_name} className="w-full h-full object-cover" />
-          ) : (
-            initials || 'A'
-          )}
+      <section className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 text-center shadow-sm">
+          <div className="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-3xl border-4 border-green-100 bg-green-50 text-4xl font-bold text-green-700">
+            {user.image_url ? (
+              <img src={user.image_url} alt={user.full_name} className="h-full w-full object-cover" />
+            ) : (
+              initials || 'A'
+            )}
+          </div>
+          <h2 className="mt-5 text-2xl font-bold text-gray-900">{user.full_name}</h2>
+          <p className="mt-1 break-all text-sm text-gray-500">{user.email}</p>
+          <span className="mt-4 inline-flex rounded-full bg-green-50 px-4 py-2 text-sm font-bold capitalize text-green-700">
+            {user.role}
+          </span>
         </div>
 
-        <div className="flex-1 space-y-6 w-full">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Nama lengkap</p>
-            <p className="text-xl font-semibold text-gray-900">{user.full_name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Email</p>
-            <p className="text-base text-gray-700">{user.email}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Role</p>
-            <p className="inline-flex px-3 py-1 rounded-full bg-green-50 text-green-700 font-semibold text-sm capitalize">{user.role}</p>
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl bg-gray-50 p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Nama lengkap</p>
+              <p className="mt-2 text-base font-bold text-gray-900">{user.full_name}</p>
+            </div>
+            <div className="rounded-2xl bg-gray-50 p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Role</p>
+              <p className="mt-2 text-base font-bold capitalize text-gray-900">{user.role}</p>
+            </div>
+            <div className="rounded-2xl bg-gray-50 p-5 sm:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Email</p>
+              <p className="mt-2 break-all text-base font-semibold text-gray-900">{user.email}</p>
+            </div>
           </div>
 
-          <div className="pt-2 flex gap-3">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-5 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
-            >
-              Kembali
-            </button>
+          <div className="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleLogout}
-              className="px-5 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-red-700"
             >
+              <span className="material-symbols-outlined text-lg">logout</span>
               Logout
             </button>
           </div>

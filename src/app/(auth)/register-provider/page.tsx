@@ -331,10 +331,10 @@ export default function RegisterProviderPage() {
       setStep(4);
       // Store token if needed
       if (result.data?.token) {
-        sessionStorage.setItem("accessToken", result.data.token);
+        localStorage.setItem("accessToken", result.data.token);
       }
       if (result.data?.user) {
-        sessionStorage.setItem("user", JSON.stringify({
+        localStorage.setItem("user", JSON.stringify({
           ...result.data.user,
           providerProfile: result.data.providerProfile
         }));

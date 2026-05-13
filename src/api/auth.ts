@@ -613,7 +613,7 @@ export const logout = async (): Promise<{
     console.log("[API Debug] logout: Unregistering all device tokens");
 
     // Try to unregister all device tokens from backend (non-blocking if fails)
-    const accessToken = sessionStorage.getItem("accessToken");
+    const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       try {
         const response = await fetch(
@@ -643,9 +643,9 @@ export const logout = async (): Promise<{
       }
     }
 
-    console.log("[API Debug] logout: Clearing session storage");
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("user");
+    console.log("[API Debug] logout: Clearing local storage");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
     window.dispatchEvent(new Event("user-updated"));
     console.log("[API Success] logout: User logged out successfully");
     return {

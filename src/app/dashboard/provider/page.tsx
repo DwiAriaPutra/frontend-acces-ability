@@ -22,8 +22,8 @@ export default function ProviderDashboardPage() {
   const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    const userStr = sessionStorage.getItem("user");
-    const token = sessionStorage.getItem("accessToken");
+    const userStr = localStorage.getItem("user");
+    const token = localStorage.getItem("accessToken");
 
     // Role check: only "provider" can access this page
     if (userStr) {

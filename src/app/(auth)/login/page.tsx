@@ -76,8 +76,8 @@ export default function LoginPage() {
         return;
       }
 
-      sessionStorage.setItem("accessToken", result.data.token);
-      sessionStorage.setItem("user", JSON.stringify({
+      localStorage.setItem("accessToken", result.data.token);
+      localStorage.setItem("user", JSON.stringify({
         ...result.data.user,
         providerProfile: result.data.providerProfile
       }));
@@ -88,21 +88,9 @@ export default function LoginPage() {
         console.error('[Login] registerForPush error', e);
       }
 
-      // If provider, only redirect to provider dashboard when verified.
+      // Redirect based on role. Provider verification is handled inside provider pages.
       if (result.data.user.role === 'provider') {
-        const isVerified = !!result.data.providerProfile?.is_verified;
-        if (isVerified) {
-          window.location.href = '/dashboard/provider';
-        } else {
-          // Show error notification to unverified provider
-          setError('Akun Anda masih menunggu persetujuan dari admin. Silakan hubungi support atau coba kembali nanti.');
-          setIsSubmitting(false);
-          // Redirect to landing page after 3 seconds
-          setTimeout(() => {
-            window.location.href = '/';
-          }, 3000);
-          return;
-        }
+        window.location.href = '/dashboard/provider';
       } else if (result.data.user.role === 'admin') {
         window.location.href = '/dashboard/admin';
       } else {

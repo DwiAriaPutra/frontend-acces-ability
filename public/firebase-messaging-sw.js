@@ -60,13 +60,24 @@ self.addEventListener("activate", (event) => {
 messaging.onBackgroundMessage(function (payload) {
   console.log("[firebase-messaging-sw] background message received:", payload);
 
-  const notificationTitle = payload?.notification?.title || "Notification";
+  const notificationTitle =
+    payload?.notification?.title ||
+    payload?.data?.title ||
+    payload?.data?.notification_title ||
+    "Notifikasi Baru";
+  const notificationUrl =
+    payload?.fcmOptions?.link || payload?.data?.url || payload?.data?.link || "/";
   const notificationOptions = {
-    body: payload?.notification?.body || "",
+    body:
+      payload?.notification?.body ||
+      payload?.data?.body ||
+      payload?.data?.message ||
+      payload?.data?.notification_body ||
+      "",
     icon: payload?.notification?.icon || "/favicon.ico",
     badge: payload?.notification?.badge || "/favicon.ico",
-    tag: payload?.notification?.tag || "firebase-notification",
-    data: payload?.data || {},
+    tag: payload?.notification?.tag || payload?.data?.tag || "firebase-notification",
+    data: { ...(payload?.data || {}), url: notificationUrl },
   };
 
   console.log(
@@ -74,6 +85,26 @@ messaging.onBackgroundMessage(function (payload) {
     notificationTitle
   );
   self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification?.data?.url || "/";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client && client.url.includes(self.location.origin)) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
 });
 
 console.log("[firebase-messaging-sw] Service worker loaded and ready");

@@ -19,6 +19,7 @@ import {
   getProviderDetail,
 } from "@/api";
 import type { Coordinates } from "@/components/LocationPickerMap";
+import { showAppNotification } from "@/utils/notifications";
 
 const LocationPickerMap = dynamic(
   () => import("@/components/LocationPickerMap"),
@@ -270,7 +271,7 @@ export default function BookingOrderPage() {
       return;
     }
 
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setErrorMessage("Token login tidak ditemukan. Silakan login ulang.");
       return;
@@ -328,6 +329,11 @@ export default function BookingOrderPage() {
       }
 
       setSuccessMessage("Booking berhasil dibuat.");
+      showAppNotification("Booking Diajukan", {
+        body: "Permintaan booking berhasil dikirim ke provider.",
+        tag: `booking-created-${booking.id}`,
+        url: "/dashboard/user/booking",
+      });
       router.push("/dashboard/user/booking");
     } catch (error) {
       const backendMessage = error instanceof Error ? error.message : "Unknown booking error";
