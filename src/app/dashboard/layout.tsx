@@ -276,7 +276,7 @@ export default function DashboardLayout({
         {/* Sidebar */}
         <aside className={`fixed left-0 top-0 flex flex-col z-40 h-screen w-64 border-r border-gray-200 bg-white antialiased transition-transform duration-300 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } md:relative md:translate-x-0`}>
+        } md:translate-x-0`}>
           <div className="px-6 py-8">
             <Link href="/">
               <h1 className="text-xl font-bold tracking-tight text-green-600 uppercase">
@@ -318,7 +318,7 @@ export default function DashboardLayout({
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 md:ml-64">
           <header className="sticky top-0 z-30 flex items-center px-4 sm:px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
             {/* Hamburger Button - Mobile Only */}
             <button
@@ -332,14 +332,6 @@ export default function DashboardLayout({
             <div className="flex-1"></div>
 
             <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-              <div className="hidden sm:flex items-center gap-3">
-                <span className="material-symbols-outlined text-gray-400 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 cursor-pointer">
-                  notifications
-                </span>
-                <span className="material-symbols-outlined text-gray-400 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 cursor-pointer">
-                  help_outline
-                </span>
-              </div>
               <div className="relative flex items-center gap-3 sm:pl-6 sm:border-l border-gray-200 min-w-0">
                 <div className="hidden sm:block text-right min-w-0">
                   <p className="font-bold text-gray-900">{userName}</p>

@@ -93,9 +93,9 @@ const Header = () => {
         {/* Navigation */}
         <nav className="hidden md:flex space-x-8 text-sm font-medium">
           <Link href="/" className="hover:text-brand-green">Beranda</Link>
-          <Link href="#layanan" className="hover:text-brand-green">Layanan</Link>
-          <Link href="#tentang-kami" className="hover:text-brand-green">Tentang Kami</Link>
-          <Link href="#" className="hover:text-brand-green">Daftar Provider</Link>
+          <Link href="/layanan" className="hover:text-brand-green">Layanan</Link>
+          <Link href="/tentang-kami" className="hover:text-brand-green">Tentang Kami</Link>
+          <Link href="/register-provider" className="hover:text-brand-green">Daftar Provider</Link>
         </nav>
         {/* Auth Buttons or User Menu */}
         <div className="hidden md:flex items-center space-x-4">
@@ -167,8 +167,8 @@ const Header = () => {
         <div className="md:hidden border-t border-gray-100 bg-white px-4 pb-4 shadow-sm">
           <nav className="flex flex-col py-3 text-sm font-medium text-gray-700">
             <Link href="/" className="py-3 hover:text-brand-green" onClick={() => setIsMobileMenuOpen(false)}>Beranda</Link>
-            <Link href="#layanan" className="py-3 hover:text-brand-green" onClick={() => setIsMobileMenuOpen(false)}>Layanan</Link>
-            <Link href="#tentang-kami" className="py-3 hover:text-brand-green" onClick={() => setIsMobileMenuOpen(false)}>Tentang Kami</Link>
+            <Link href="/layanan" className="py-3 hover:text-brand-green" onClick={() => setIsMobileMenuOpen(false)}>Layanan</Link>
+            <Link href="/tentang-kami" className="py-3 hover:text-brand-green" onClick={() => setIsMobileMenuOpen(false)}>Tentang Kami</Link>
             <Link href="/register-provider" className="py-3 hover:text-brand-green" onClick={() => setIsMobileMenuOpen(false)}>Daftar Provider</Link>
           </nav>
           <div className="border-t border-gray-100 pt-4">

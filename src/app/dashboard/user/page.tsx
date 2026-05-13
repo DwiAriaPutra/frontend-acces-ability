@@ -103,9 +103,12 @@ export default function UserDashboardPage() {
             keahlian.
           </p>
           <div className="flex gap-4">
-            <button className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-colors shadow-lg shadow-black/5">
+            <Link
+              href="/dashboard/user/cari-provider"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-colors shadow-lg shadow-black/5 text-center"
+            >
               Mulai Cari Provider
-            </button>
+            </Link>
           </div>
         </div>
       </section>
