@@ -221,6 +221,7 @@ export interface Booking {
   provider?: {
     id: string;
     full_name: string;
+    phone_number?: string | null;
     profile_image_url?: string;
     base_location_city?: string;
     years_experience?: string;

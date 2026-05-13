@@ -189,6 +189,15 @@ export default function BookingDetailPage() {
     [booking, providerName]
   );
 
+  const providerPhone = useMemo(
+    () =>
+      booking?.providerProfile?.user?.phone_number ||
+      booking?.providerProfile?.phone_number ||
+      booking?.provider?.phone_number ||
+      "",
+    [booking]
+  );
+
   const existingReview = booking?.review || null;
 
   if (isLoading) {
@@ -253,14 +262,16 @@ export default function BookingDetailPage() {
 
       <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <aside className={`rounded-3xl border ${statusConfig.borderColor} bg-white p-6 shadow-sm`}>
-          <Image
-            src={providerImage}
-            alt={providerName}
-            width={320}
-            height={288}
-            className="h-72 w-full rounded-2xl object-cover"
-            unoptimized
-          />
+          <div className="relative h-72 w-full overflow-hidden rounded-2xl">
+            <Image
+              src={providerImage}
+              alt={providerName}
+              fill
+              sizes="(min-width: 1024px) 320px, 100vw"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
           <div className="mt-6 space-y-3">
             <div>
               <p className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-2">
@@ -274,6 +285,24 @@ export default function BookingDetailPage() {
             <p className="text-sm font-semibold text-green-700">
               {booking.serviceType?.name || booking.service_type?.name || `Layanan #${booking.service_type_id}`}
             </p>
+            <div className="rounded-2xl bg-gray-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                No. Telepon Provider
+              </p>
+              {providerPhone ? (
+                <a
+                  href={`tel:${providerPhone}`}
+                  className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-green-700 hover:text-green-800"
+                >
+                  <span className="material-symbols-outlined text-base">call</span>
+                  {providerPhone}
+                </a>
+              ) : (
+                <p className="mt-2 text-sm font-semibold text-gray-500">
+                  Nomor telepon belum tersedia
+                </p>
+              )}
+            </div>
             <p className="text-sm text-gray-600">
               {booking.providerProfile?.years_experience
                 ? `Pengalaman ${booking.providerProfile.years_experience} Tahun`
