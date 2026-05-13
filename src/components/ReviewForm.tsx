@@ -19,7 +19,7 @@ export default function ReviewForm({ bookingId, existingReview, onCreated }: Pro
   const handleSubmit = async () => {
     setError(null);
     setMessage(null);
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const token = typeof window !== "undefined" ? sessionStorage.getItem("accessToken") : null;
     if (!token) return setError("Sesi login tidak ditemukan.");
     if (!bookingId) return setError("Booking tidak ditemukan.");
     if (rating < 1 || rating > 5) return setError("Rating harus antara 1 sampai 5.");

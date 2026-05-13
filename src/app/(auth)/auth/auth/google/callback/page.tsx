@@ -49,8 +49,8 @@ function GoogleCallbackContent() {
 
         if (result.success && result.data) {
           // Store token
-          localStorage.setItem('accessToken', result.data.token);
-          localStorage.setItem('user', JSON.stringify({
+          sessionStorage.setItem("accessToken", result.data.token);
+          sessionStorage.setItem("user", JSON.stringify({
             ...result.data.user,
             providerProfile: result.data.providerProfile
           }));

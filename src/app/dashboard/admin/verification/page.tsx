@@ -194,7 +194,7 @@ export default function ProviderVerificationPage() {
   } | null>(null);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
 
     if (!userStr) {
       setUnauthorized(true);
@@ -433,7 +433,7 @@ export default function ProviderVerificationPage() {
   };
 
   const handleVerification = async (verificationStatus: VerificationAction) => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
 
     if (!token || !selectedProviderId) {
       setActionMessage("Sesi admin tidak ditemukan. Silakan login ulang.");
@@ -497,7 +497,7 @@ export default function ProviderVerificationPage() {
     if (!confirmDialog) return;
 
     const { certId, isVerifying } = confirmDialog;
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
 
     if (!token || !selectedProviderId) {
       setActionMessage("Sesi admin tidak ditemukan. Silakan login ulang.");

@@ -32,6 +32,8 @@ import {
   getServiceTypes,
   getUserBookings,
   updateMyProvider,
+  updateMe,
+  updateMeMultipart,
   logout,
 } from "@/api";
 
@@ -107,8 +109,8 @@ export default function ProfileProviderPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const userStr = localStorage.getItem("user");
-      const token = localStorage.getItem("accessToken");
+      const userStr = sessionStorage.getItem("user");
+      const token = sessionStorage.getItem("accessToken");
 
       if (!userStr || !token) {
         setIsLoading(false);
@@ -139,6 +141,38 @@ export default function ProfileProviderPage() {
 
         if (profileData) {
           setProvider(profileData);
+          const mergedAccount = {
+            full_name:
+              storedUser.full_name ||
+              profileData.user?.full_name ||
+              profileData.full_name ||
+              "",
+            email:
+              storedUser.email ||
+              profileData.user?.email ||
+              profileData.email ||
+              "",
+            phone_number:
+              storedUser.phone_number ||
+              profileData.user?.phone_number ||
+              profileData.phone_number ||
+              "",
+            role: storedUser.role || profileData.user?.role || "provider",
+            image_url:
+              storedUser.image_url ||
+              profileData.user?.image_url ||
+              profileData.profile_image_url ||
+              profileData.image_url ||
+              null,
+          };
+
+          setProfileUser(mergedAccount);
+          setAccountEdits({
+            full_name: mergedAccount.full_name,
+            email: mergedAccount.email,
+            phone_number: mergedAccount.phone_number,
+          });
+
           setFormState({
             bio: profileData.bio || "",
             years_experience:
@@ -244,7 +278,7 @@ export default function ProfileProviderPage() {
 
   const handleAddAvailability = async () => {
     setError(null);
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) return setError("Token tidak ditemukan.");
     const created = await createMyAvailability(token, newAvailability);
     if (created) {
@@ -262,7 +296,7 @@ export default function ProfileProviderPage() {
 
   const handleUpdateAvailability = async (id: string, payload: Partial<{ day_of_week: number; start_time: string; end_time: string; is_active: boolean }>) => {
     setError(null);
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) return setError("Token tidak ditemukan.");
     const updated = await updateMyAvailability(token, id, payload);
     if (updated) {
@@ -280,7 +314,7 @@ export default function ProfileProviderPage() {
 
   const handleDeleteAvailability = async (id: string) => {
     setError(null);
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) return setError("Token tidak ditemukan.");
     const ok = await deleteMyAvailability(token, id);
     if (ok) {
@@ -356,38 +390,57 @@ export default function ProfileProviderPage() {
     setError(null);
     setSuccess(null);
 
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setError("Token login tidak ditemukan. Silakan login ulang.");
       return;
     }
 
-    const payload: UpdateMyProviderPayload = {
-      bio: formState.bio.trim() || null,
-      years_experience: formState.years_experience.trim()
-        ? Number(formState.years_experience)
-        : null,
-      price_per_hour: formState.price_per_hour.trim()
-        ? Number(formState.price_per_hour)
-        : null,
-      province_id: formState.province_id.trim() || null,
-      province_name: formState.province_name.trim() || null,
-      regency_id: formState.regency_id.trim() || null,
-      regency_name: formState.regency_name.trim() || null,
-      base_location_city: formState.base_location_city.trim() || null,
-      base_location_lat: formState.base_location_lat.trim()
-        ? Number(formState.base_location_lat)
-        : null,
-      base_location_lng: formState.base_location_lng.trim()
-        ? Number(formState.base_location_lng)
-        : null,
+    const payload: UpdateMyProviderPayload = {};
+    const setTextPayload = (
+      field: keyof UpdateMyProviderPayload,
+      value: string,
+      existingValue?: string | number | null
+    ) => {
+      const nextValue = value.trim();
+      if (nextValue) {
+        (payload as Record<string, string | number | null>)[field] = nextValue;
+      } else if (existingValue !== undefined && existingValue !== null && String(existingValue).trim()) {
+        (payload as Record<string, string | number | null>)[field] = null;
+      }
+    };
+    const setNumberPayload = (
+      field: keyof UpdateMyProviderPayload,
+      value: string,
+      existingValue?: string | number | null
+    ) => {
+      const nextValue = value.trim();
+      if (nextValue) {
+        (payload as Record<string, string | number | null>)[field] = Number(nextValue);
+      } else if (existingValue !== undefined && existingValue !== null && String(existingValue).trim()) {
+        (payload as Record<string, string | number | null>)[field] = null;
+      }
     };
 
+    setTextPayload("bio", formState.bio, provider?.bio);
+    setNumberPayload("years_experience", formState.years_experience, provider?.years_experience);
+    setNumberPayload("price_per_hour", formState.price_per_hour, provider?.price_per_hour);
+    setTextPayload("province_id", formState.province_id, provider?.province_id);
+    setTextPayload("province_name", formState.province_name, provider?.province_name);
+    setTextPayload("regency_id", formState.regency_id, provider?.regency_id);
+    setTextPayload("regency_name", formState.regency_name, provider?.regency_name);
+    setTextPayload("base_location_city", formState.base_location_city, provider?.base_location_city);
+    setNumberPayload("base_location_lat", formState.base_location_lat, provider?.base_location_lat);
+    setNumberPayload("base_location_lng", formState.base_location_lng, provider?.base_location_lng);
+
+    const isInvalidNumber = (value: number | null | undefined) =>
+      value !== null && value !== undefined && Number.isNaN(value);
+
     if (
-      (payload.years_experience !== null && Number.isNaN(payload.years_experience)) ||
-      (payload.price_per_hour !== null && Number.isNaN(payload.price_per_hour)) ||
-      (payload.base_location_lat !== null && Number.isNaN(payload.base_location_lat)) ||
-      (payload.base_location_lng !== null && Number.isNaN(payload.base_location_lng))
+      isInvalidNumber(payload.years_experience) ||
+      isInvalidNumber(payload.price_per_hour) ||
+      isInvalidNumber(payload.base_location_lat) ||
+      isInvalidNumber(payload.base_location_lng)
     ) {
       setError("Pastikan semua angka diisi dengan format yang valid.");
       return;
@@ -395,51 +448,89 @@ export default function ProfileProviderPage() {
 
     setIsSaving(true);
 
-      try {
-      // Update basic user account fields first (name/email/phone)
-      try {
-        const { updateMe } = await import("@/api");
-        const userPayload: { full_name?: string | null; email?: string | null; phone_number?: string | null } = {};
-        if (accountEdits.full_name && accountEdits.full_name !== profileUser?.full_name) userPayload.full_name = accountEdits.full_name;
-        if (accountEdits.email && accountEdits.email !== profileUser?.email) userPayload.email = accountEdits.email;
-        if (typeof accountEdits.phone_number !== "undefined" && accountEdits.phone_number !== profileUser?.phone_number) userPayload.phone_number = accountEdits.phone_number || null;
+    try {
+      const userPayload: { full_name?: string | null; email?: string | null; phone_number?: string | null } = {};
+      const nextFullName = accountEdits.full_name?.trim() || "";
+      const nextEmail = accountEdits.email?.trim() || "";
 
-        if (Object.keys(userPayload).length > 0) {
-          const userUpdateResult = await updateMe(token, userPayload);
-          if (!userUpdateResult.success) {
-            setError(userUpdateResult.message || "Gagal memperbarui data akun.");
-            setIsSaving(false);
-            return;
-          }
-
-          // update localStorage user
-          try {
-            const userStr = localStorage.getItem("user");
-            if (userStr) {
-              const stored = JSON.parse(userStr);
-              const newUser = { ...stored, ...userUpdateResult.data?.user };
-              localStorage.setItem("user", JSON.stringify(newUser));
-              setProfileUser({
-                full_name: newUser.full_name || "",
-                email: newUser.email || "",
-                phone_number: newUser.phone_number || "",
-                role: newUser.role || profileUser?.role || "provider",
-                image_url: newUser.image_url || profileUser?.image_url || null,
-              });
-            }
-          } catch (e) {
-            console.error("Error updating localStorage after user update", e);
-          }
-        }
-      } catch (e) {
-        console.error("Error while updating user account fields:", e);
+      if (nextFullName) {
+        if (nextFullName !== profileUser?.full_name) userPayload.full_name = nextFullName;
+      } else if (profileUser?.full_name) {
+        setError("Nama lengkap wajib diisi.");
+        return;
       }
 
-      const updatedProvider = await updateMyProvider(token, payload);
-
-      if (!updatedProvider) {
-        setError("Gagal menyimpan perubahan profil provider.");
+      if (nextEmail) {
+        if (nextEmail !== profileUser?.email) userPayload.email = nextEmail;
+      } else if (profileUser?.email) {
+        setError("Email wajib diisi.");
         return;
+      }
+
+      if (typeof accountEdits.phone_number !== "undefined" && accountEdits.phone_number !== profileUser?.phone_number) {
+        userPayload.phone_number = accountEdits.phone_number.trim() || null;
+      }
+
+      const shouldUpdateUser = Object.keys(userPayload).length > 0 || !!profileImageFile;
+
+      if (shouldUpdateUser) {
+        const userUpdateResult = profileImageFile
+          ? await updateMeMultipart(token, {
+              fields: userPayload,
+              profile_image: profileImageFile,
+            })
+          : await updateMe(token, userPayload);
+
+        if (!userUpdateResult.success) {
+          setError(userUpdateResult.message || "Gagal memperbarui data akun.");
+          return;
+        }
+
+        const userStr = sessionStorage.getItem("user");
+        const stored = userStr ? JSON.parse(userStr) : {};
+        const responseData = userUpdateResult.data as any;
+        const updatedUser = responseData?.user || responseData || {};
+        const updatedImageUrl =
+          updatedUser.image_url || updatedUser.profile_image_url || profileUser?.image_url || null;
+        const newUser = {
+          ...stored,
+          ...updatedUser,
+          full_name: updatedUser.full_name || userPayload.full_name || profileUser?.full_name || "",
+          email: updatedUser.email || userPayload.email || profileUser?.email || "",
+          phone_number:
+            updatedUser.phone_number ??
+            userPayload.phone_number ??
+            profileUser?.phone_number ??
+            "",
+          image_url: updatedImageUrl,
+        };
+
+        sessionStorage.setItem("user", JSON.stringify(newUser));
+        window.dispatchEvent(new Event("user-updated"));
+        setProfileUser({
+          full_name: newUser.full_name || "",
+          email: newUser.email || "",
+          phone_number: newUser.phone_number || "",
+          role: newUser.role || profileUser?.role || "provider",
+          image_url: newUser.image_url || null,
+        });
+        setAccountEdits({
+          full_name: newUser.full_name || "",
+          email: newUser.email || "",
+          phone_number: newUser.phone_number || "",
+        });
+      }
+
+      const shouldUpdateProviderProfile = Object.keys(payload).length > 0;
+      let updatedProvider = provider;
+
+      if (shouldUpdateProviderProfile) {
+        updatedProvider = await updateMyProvider(token, payload);
+
+        if (!updatedProvider) {
+          setError("Gagal menyimpan perubahan profil provider.");
+          return;
+        }
       }
 
       const existingIds =
@@ -451,11 +542,19 @@ export default function ProfileProviderPage() {
       const toRemove = existingIds.filter((id) => !selectedServiceTypeIds.includes(id));
 
       if (toAdd.length > 0) {
-        await addMySpecializations(token, selectedServiceTypeIds);
+        const added = await addMySpecializations(token, toAdd);
+        if (!added) {
+          setError("Profil tersimpan, tetapi gagal menambahkan layanan baru.");
+          return;
+        }
       }
 
       for (const serviceTypeId of toRemove) {
-        await deleteMySpecializationByServiceType(token, serviceTypeId);
+        const removed = await deleteMySpecializationByServiceType(token, serviceTypeId);
+        if (!removed) {
+          setError("Profil tersimpan, tetapi gagal menghapus salah satu layanan.");
+          return;
+        }
       }
 
       if (certificateFile) {
@@ -500,18 +599,22 @@ export default function ProfileProviderPage() {
       setCertifications(refreshedCertificates);
       setSelectedServiceTypeIds(selectedServiceTypeIds);
       setCertificateFile(null);
+      setProfileImageFile(null);
+      setProfileImagePreview("");
+      setShowImageUpload(false);
 
-      const userStr = localStorage.getItem("user");
+      const userStr = sessionStorage.getItem("user");
       if (userStr && refreshedProvider) {
         try {
           const storedUser = JSON.parse(userStr);
-          localStorage.setItem(
+          sessionStorage.setItem(
             "user",
             JSON.stringify({
               ...storedUser,
               providerProfile: refreshedProvider,
             })
           );
+          window.dispatchEvent(new Event("user-updated"));
         } catch (storageError) {
           console.error("Error updating localStorage user", storageError);
         }
@@ -669,14 +772,12 @@ export default function ProfileProviderPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      // TODO: Implement API call to upload image
-                      console.log("Uploading profile image:", profileImageFile);
                       setShowImageUpload(false);
                     }}
                     disabled={!profileImageFile}
                     className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Simpan Foto
+                    Gunakan Foto
                   </button>
                 </div>
               </div>
@@ -844,7 +945,7 @@ export default function ProfileProviderPage() {
                           type="button"
                           className="text-xs font-bold text-red-600 hover:underline"
                           onClick={async () => {
-                            const token = localStorage.getItem("accessToken");
+                            const token = sessionStorage.getItem("accessToken");
                             if (!token) return;
                             const deleted = await deleteMyProviderCertificate(token, certification.id);
                             if (deleted) {

@@ -11,7 +11,7 @@ Status: Active.
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DragDropImageZone from "@/components/DragDropImageZone";
-import { getUserBookings, logout } from "@/api";
+import { getUserBookings, logout, updateMe, updateMeMultipart } from "@/api";
 import type { Booking } from "@/api";
 
 export default function ProfilPage() {
@@ -23,7 +23,15 @@ export default function ProfilPage() {
     role: "user",
     image_url: "",
   });
+  const [formState, setFormState] = useState({
+    full_name: "",
+    email: "",
+    phone_number: "",
+  });
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [bookingStats, setBookingStats] = useState({
     totalBookings: 0,
     completedServices: 0,
@@ -34,16 +42,23 @@ export default function ProfilPage() {
   const [showImageUpload, setShowImageUpload] = useState(false);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
     if (userStr) {
       try {
         const storedUser = JSON.parse(userStr);
-        setUser({
+        const nextUser = {
           full_name: storedUser.full_name || "",
           email: storedUser.email || "",
           phone: storedUser.phone_number || storedUser.phone || "-",
           role: storedUser.role || "user",
           image_url: storedUser.image_url || "",
+        };
+
+        setUser(nextUser);
+        setFormState({
+          full_name: nextUser.full_name,
+          email: nextUser.email,
+          phone_number: nextUser.phone === "-" ? "" : nextUser.phone,
         });
       } catch (error) {
         console.error("Error parsing user from localStorage", error);
@@ -55,7 +70,7 @@ export default function ProfilPage() {
 
   useEffect(() => {
     const loadBookingStats = async () => {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
         setIsStatsLoading(false);
         return;
@@ -107,6 +122,119 @@ export default function ProfilPage() {
     }
   };
 
+  const handleFormChange = (field: keyof typeof formState, value: string) => {
+    setFormState((current) => ({ ...current, [field]: value }));
+    if (error) setError(null);
+    if (success) setSuccess(null);
+  };
+
+  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    const token = sessionStorage.getItem("accessToken");
+    if (!token) {
+      setError("Token login tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
+    const nextFullName = formState.full_name.trim();
+    const nextEmail = formState.email.trim();
+    const nextPhoneNumber = formState.phone_number.trim();
+    const fields: {
+      full_name?: string;
+      email?: string;
+      phone_number?: string | null;
+    } = {};
+
+    if (nextFullName) {
+      fields.full_name = nextFullName;
+    } else if (user.full_name) {
+      setError("Nama lengkap wajib diisi.");
+      return;
+    }
+
+    if (nextEmail) {
+      fields.email = nextEmail;
+    } else if (user.email) {
+      setError("Email wajib diisi.");
+      return;
+    }
+
+    if (nextPhoneNumber) {
+      fields.phone_number = nextPhoneNumber;
+    } else if (user.phone && user.phone !== "-") {
+      fields.phone_number = null;
+    }
+
+    const hasFieldChanges = Object.keys(fields).length > 0;
+    if (!hasFieldChanges && !profileImageFile) {
+      setError("Isi minimal satu data profil atau pilih foto baru.");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const result = profileImageFile
+        ? await updateMeMultipart(token, {
+            fields,
+            profile_image: profileImageFile,
+          })
+        : await updateMe(token, fields);
+
+      if (!result.success) {
+        setError(result.message || "Gagal menyimpan perubahan profil.");
+        return;
+      }
+
+      const responseData = result.data as any;
+      const updatedUser = responseData?.user || responseData || {};
+      const updatedImageUrl = updatedUser.image_url || updatedUser.profile_image_url || user.image_url;
+      const mergedUser = {
+        ...user,
+        ...updatedUser,
+        full_name: updatedUser.full_name || fields.full_name || user.full_name,
+        email: updatedUser.email || fields.email || user.email,
+        phone: updatedUser.phone_number || fields.phone_number || "-",
+        image_url: updatedImageUrl,
+      };
+
+      setUser(mergedUser);
+      setFormState({
+        full_name: mergedUser.full_name,
+        email: mergedUser.email,
+        phone_number: mergedUser.phone === "-" ? "" : mergedUser.phone,
+      });
+
+      const storedUserRaw = sessionStorage.getItem("user");
+      const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : {};
+      sessionStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...storedUser,
+          ...updatedUser,
+          full_name: mergedUser.full_name,
+          email: mergedUser.email,
+          phone_number: mergedUser.phone === "-" ? null : mergedUser.phone,
+          image_url: updatedImageUrl,
+        })
+      );
+      window.dispatchEvent(new Event("user-updated"));
+
+      setProfileImageFile(null);
+      setProfileImagePreview("");
+      setShowImageUpload(false);
+      setSuccess("Profil berhasil diperbarui.");
+    } catch (saveError) {
+      console.error("Error saving user profile:", saveError);
+      setError("Terjadi kesalahan saat menyimpan profil.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center">Memuat profil...</div>;
   }
@@ -115,6 +243,16 @@ export default function ProfilPage() {
     <div className="p-8 max-w-[1400px] mx-auto space-y-8">
       <section>
         <h2 className="text-3xl font-bold text-gray-900 mb-8">Profil Saya</h2>
+        {error && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-700">
+            {success}
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
@@ -177,14 +315,12 @@ export default function ProfilPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        // TODO: Implement API call to upload image
-                        console.log("Uploading profile image:", profileImageFile);
                         setShowImageUpload(false);
                       }}
                       disabled={!profileImageFile}
                       className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Simpan Foto
+                      Gunakan Foto
                     </button>
                   </div>
                 </div>
@@ -192,14 +328,15 @@ export default function ProfilPage() {
             </div>
 
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSave}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Nama Lengkap</label>
                     <input
                       className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all text-gray-700 bg-gray-50/50"
                       type="text"
-                      defaultValue={user.full_name}
+                      value={formState.full_name}
+                      onChange={(event) => handleFormChange("full_name", event.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -207,8 +344,8 @@ export default function ProfilPage() {
                     <input
                       className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all text-gray-700 bg-gray-50/50"
                       type="email"
-                      defaultValue={user.email}
-                      readOnly
+                      value={formState.email}
+                      onChange={(event) => handleFormChange("email", event.target.value)}
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -216,16 +353,18 @@ export default function ProfilPage() {
                     <input
                       className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600 transition-all text-gray-700 bg-gray-50/50"
                       type="text"
-                      defaultValue={user.phone}
+                      value={formState.phone_number}
+                      onChange={(event) => handleFormChange("phone_number", event.target.value)}
                     />
                   </div>
                 </div>
                 <div className="pt-4">
                   <button
-                    className="w-full md:w-auto px-10 py-3.5 bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-600/20 hover:bg-green-700 transition-all active:scale-95"
-                    type="button"
+                    className="w-full md:w-auto px-10 py-3.5 bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-600/20 hover:bg-green-700 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                    type="submit"
+                    disabled={isSaving}
                   >
-                    Simpan Perubahan
+                    {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
                   </button>
                 </div>
               </form>

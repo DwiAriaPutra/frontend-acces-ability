@@ -18,6 +18,45 @@ import { GoogleAuthResponse, GoogleCallbackResponse } from "./types";
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
 
+const getApiErrorMessage = (fallback: string, errorText: string) => {
+  try {
+    const errorData = JSON.parse(errorText);
+    const message = errorData.message || errorData.error || fallback;
+    const details = errorData.errors || errorData.details;
+    const normalizedMessage = String(message).toLowerCase();
+
+    if (normalizedMessage.includes("too many files")) {
+      return "Upload gagal: file yang dikirim terlalu banyak untuk endpoint register. Coba unggah satu foto profil dan satu sertifikat.";
+    }
+
+    if (Array.isArray(details) && details.length > 0) {
+      return `${message}: ${details
+        .map((item) =>
+          typeof item === "string"
+            ? item
+            : item?.message || item?.field || JSON.stringify(item)
+        )
+        .join(", ")}`;
+    }
+
+    if (details && typeof details === "object") {
+      return `${message}: ${Object.entries(details)
+        .map(([field, value]) =>
+          Array.isArray(value) ? `${field} ${value.join(", ")}` : `${field} ${value}`
+        )
+        .join(", ")}`;
+    }
+
+    return message;
+  } catch {
+    console.error(
+      "[API Error] Failed to parse error response:",
+      errorText.substring(0, 200)
+    );
+    return fallback;
+  }
+};
+
 /**
  * Register new provider dengan multipart/form-data
  * @param payload - Provider registration data
@@ -38,7 +77,9 @@ export const registerProvider = async (
     formData.append("full_name", payload.full_name);
     formData.append("email", payload.email);
     formData.append("password", payload.password);
-    formData.append("phone_number", payload.phone_number);
+    if (payload.phone_number) {
+      formData.append("phone_number", payload.phone_number);
+    }
     formData.append("role", "provider");
 
     // Location fields
@@ -57,9 +98,10 @@ export const registerProvider = async (
       formData.append("bio", payload.bio);
     }
 
-    // Specializations as array
+    // Send as repeated fields so backend validators receive each item separately.
     payload.provider_specialization.forEach((id) => {
       formData.append("provider_specialization[]", String(id));
+      formData.append("service_type_ids[]", String(id));
     });
 
     // Files
@@ -85,18 +127,10 @@ export const registerProvider = async (
     // Check if response is ok
     if (!response.ok) {
       const errorText = await response.text();
-      let errorMessage = `Registration failed with status ${response.status}`;
-
-      // Try to parse error response
-      try {
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.message || errorMessage;
-      } catch {
-        console.error(
-          "[API Error] Failed to parse error response:",
-          errorText.substring(0, 200)
-        );
-      }
+      const errorMessage = getApiErrorMessage(
+        `Registration failed with status ${response.status}`,
+        errorText
+      );
 
       console.error("[API Error] registerProvider:", errorMessage);
       return {
@@ -109,11 +143,11 @@ export const registerProvider = async (
     const result: ApiResponse<RegisterSuccessResponse> = await response.json();
 
     // Validate response
-    if (result.success && result.data) {
+    if (result.success) {
       console.log("[API Success] registerProvider: Registration successful");
       return {
         success: true,
-        message: result.message,
+        message: result.message || "Registration successful",
         data: result.data,
       };
     }
@@ -132,7 +166,7 @@ export const registerProvider = async (
     console.error("[API Error] registerProvider:", error);
     return {
       success: false,
-      message: `Network error: ${errorMessage}`,
+      message: `Tidak bisa terhubung ke backend (${BACKEND_URL}). Periksa NEXT_PUBLIC_BACKEND_URL, status server backend, dan konfigurasi CORS. Detail: ${errorMessage}`,
     };
   }
 };
@@ -519,8 +553,8 @@ export const updateMeMultipart = async (
     if (options.fields) {
       Object.keys(options.fields).forEach((k) => {
         const v = options.fields![k];
-        if (v === null || typeof v === "undefined") return;
-        formData.append(k, String(v));
+        if (typeof v === "undefined") return;
+        formData.append(k, v === null ? "" : String(v));
       });
     }
 
@@ -579,7 +613,7 @@ export const logout = async (): Promise<{
     console.log("[API Debug] logout: Unregistering all device tokens");
 
     // Try to unregister all device tokens from backend (non-blocking if fails)
-    const accessToken = localStorage.getItem("accessToken");
+    const accessToken = sessionStorage.getItem("accessToken");
     if (accessToken) {
       try {
         const response = await fetch(
@@ -609,9 +643,10 @@ export const logout = async (): Promise<{
       }
     }
 
-    console.log("[API Debug] logout: Clearing local storage");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+    console.log("[API Debug] logout: Clearing session storage");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("user");
+    window.dispatchEvent(new Event("user-updated"));
     console.log("[API Success] logout: User logged out successfully");
     return {
       success: true,

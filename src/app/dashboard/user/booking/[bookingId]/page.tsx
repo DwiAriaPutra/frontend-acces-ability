@@ -137,7 +137,7 @@ export default function BookingDetailPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   useEffect(() => {
     const fetchBooking = async () => {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
         setIsLoggedIn(false);
         setIsLoading(false);
@@ -383,7 +383,7 @@ export default function BookingDetailPage() {
               bookingId={booking.id}
               existingReview={existingReview}
               onCreated={async () => {
-                const token = localStorage.getItem("accessToken");
+                const token = sessionStorage.getItem("accessToken");
                 if (!token) return;
                 const [detail, history] = await Promise.all([
                   getBookingDetail(token, booking.id),
@@ -471,7 +471,7 @@ export default function BookingDetailPage() {
               <button
                 onClick={async () => {
                   setIsCancelling(true);
-                  const token = localStorage.getItem("accessToken");
+                  const token = sessionStorage.getItem("accessToken");
                   if (token && bookingId) {
                     const result = await cancelBooking(token, bookingId, cancelReason);
                     if (result) {

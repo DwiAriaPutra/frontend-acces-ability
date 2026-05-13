@@ -76,8 +76,8 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem('accessToken', result.data.token);
-      localStorage.setItem('user', JSON.stringify({
+      sessionStorage.setItem("accessToken", result.data.token);
+      sessionStorage.setItem("user", JSON.stringify({
         ...result.data.user,
         providerProfile: result.data.providerProfile
       }));

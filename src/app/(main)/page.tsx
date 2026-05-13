@@ -9,8 +9,8 @@ export default function Home() {
 
   useEffect(() => {
     // Check if user is already logged in
-    const user = localStorage.getItem("user");
-    const token = localStorage.getItem("accessToken");
+    const user = sessionStorage.getItem("user");
+    const token = sessionStorage.getItem("accessToken");
 
     if (user && token) {
       try {

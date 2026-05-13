@@ -25,12 +25,21 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const syncUser = () => {
-      const userStr = localStorage.getItem("user");
-      if (!userStr) {
+      const userStr = sessionStorage.getItem("user");
+      const token = sessionStorage.getItem("accessToken");
+      const isDashboardRoute = pathname?.startsWith("/dashboard");
+
+      if (!userStr || !token) {
         setUserName("User");
         setUserInitials("U");
         setUserImage(null);
         setUserRole(null);
+        setIsAccountMenuOpen(false);
+
+        if (isDashboardRoute) {
+          router.replace("/");
+        }
+
         return;
       }
 
@@ -60,6 +69,17 @@ export default function DashboardLayout({
         }
       } catch (e) {
         console.error("Error parsing user from localStorage", e);
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("user");
+        setUserName("User");
+        setUserInitials("U");
+        setUserImage(null);
+        setUserRole(null);
+        setIsAccountMenuOpen(false);
+
+        if (isDashboardRoute) {
+          router.replace("/");
+        }
       }
     };
 
@@ -76,12 +96,12 @@ export default function DashboardLayout({
       window.removeEventListener("user-updated", handleUserUpdated);
       window.removeEventListener("storage", handleUserUpdated);
     };
-  }, []);
+  }, [pathname, router]);
   useEffect(() => {
     const runPushRegistration = async () => {
       if (typeof window === "undefined") return;
 
-      const userStr = localStorage.getItem("user");
+      const userStr = sessionStorage.getItem("user");
       if (!userStr) return;
 
       const promptedKey = "push-permission-prompted";
@@ -182,10 +202,10 @@ export default function DashboardLayout({
     // If user role is known, ensure they're on the correct dashboard path
     if (!userRole || !pathname) return;
 
-    // Determine provider verification status from localStorage (if present)
+    // Determine provider verification status from sessionStorage (if present)
     let isProviderVerified = false;
     try {
-      const raw = localStorage.getItem("user");
+      const raw = sessionStorage.getItem("user");
       if (raw) {
         const parsed = JSON.parse(raw);
         isProviderVerified = !!parsed?.providerProfile?.is_verified;
@@ -243,7 +263,7 @@ export default function DashboardLayout({
         : "/dashboard/user/profil";
 
   return (
-    <div className="min-h-screen bg-[#fcf9f8] text-[#1b1c1c] font-sans">
+    <div className="h-screen overflow-hidden bg-[#fcf9f8] text-[#1b1c1c] font-sans">
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
@@ -264,7 +284,7 @@ export default function DashboardLayout({
       `,
         }}
       />
-      <div className="flex min-w-0">
+      <div className="flex h-screen min-w-0 overflow-hidden">
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div
@@ -318,8 +338,8 @@ export default function DashboardLayout({
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 md:ml-64">
-          <header className="sticky top-0 z-30 flex items-center px-4 sm:px-6 w-full h-16 bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
+        <div className="flex h-screen flex-1 min-w-0 flex-col overflow-hidden md:ml-64">
+          <header className="z-30 flex h-16 flex-shrink-0 items-center px-4 sm:px-6 w-full bg-white/90 backdrop-blur-sm border-b border-gray-100 shadow-sm text-sm">
             {/* Hamburger Button - Mobile Only */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -383,7 +403,7 @@ export default function DashboardLayout({
               </div>
             </div>
           </header>
-          <main className="min-w-0 overflow-x-hidden">{children}</main>
+          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
         </div>
       </div>
       {toast && (

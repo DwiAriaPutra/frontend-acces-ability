@@ -151,10 +151,16 @@ export const getProviderDetail = async (
       return null;
     }
 
-    const result: ApiResponse<{ provider?: Provider }> = await response.json();
+    const result: ApiResponse<{ provider?: Provider } | Provider> =
+      await response.json();
 
     if (result.success) {
-      return result.data?.provider || null;
+      const data = result.data;
+      if (data && "provider" in data) {
+        return data.provider || null;
+      }
+
+      return (data as Provider) || null;
     }
 
     console.error(
@@ -197,10 +203,16 @@ export const getMyProvider = async (
       return null;
     }
 
-    const result: ApiResponse<{ provider?: Provider }> = await response.json();
+    const result: ApiResponse<{ provider?: Provider } | Provider> =
+      await response.json();
 
     if (result.success) {
-      return result.data?.provider || null;
+      const data = result.data;
+      if (data && typeof data === "object" && "provider" in data) {
+        return data.provider || null;
+      }
+
+      return (data as Provider) || null;
     }
 
     console.error("[API Error] getMyProvider: Invalid response format", result);

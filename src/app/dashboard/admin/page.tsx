@@ -11,7 +11,7 @@ export default function AdminDashboardPage() {
   const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
 
     if (userStr) {
       try {
