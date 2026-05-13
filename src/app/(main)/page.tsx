@@ -274,7 +274,7 @@ export default function Home() {
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBoymgXz_0GJDQa3BYrkUD0CaoXs6nq7vP9n750kRY4GvV11LJahuqTvs0mLNqDm81bu_Mg9inXGEZnGF2AhTzwDhHmjHa4lPFAZM4OM-q0CbcIOhEeDLUubOUfORbpLy8iTi05_o8ymFvhOz62St3j_mZaUWGc-0p8gScoOpvWQEX-g4miCl6SDWNJ_l34qyDeB1Ph3h7fG1xGp3Qp-3wCyDlqCFqtCg_290-Io_ogqsEBNhniyoU8WXONWzXOlrbn6fO3SWaIiA"
               />
               <div className="ml-4">
-                <h4 className="font-bold">Jake</h4>
+                <h4 className="font-bold">Dwi Ganteng</h4>
                 <p className="text-xs text-gray-500">Pengguna Layanan</p>
                 <div className="flex text-yellow-400 text-xs mt-1">★★★★★</div>
               </div>
