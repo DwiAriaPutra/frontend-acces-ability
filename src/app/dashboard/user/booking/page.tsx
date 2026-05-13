@@ -290,6 +290,13 @@ export default function BookingPage() {
             const summaryTime = `${formatTime(booking.start_time)} - ${formatTime(
               booking.end_time
             )}`;
+            const providerName = booking.provider?.full_name || "Provider";
+            const providerAvatar =
+              booking.provider?.profile_image_url ||
+              booking.provider?.image_url ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                providerName
+              )}&background=008000&color=fff`;
 
             return (
               <div
@@ -297,36 +304,17 @@ export default function BookingPage() {
                 className={`bg-white rounded-3xl overflow-hidden border ${statusConfig.borderColor} shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row p-6 gap-6 group`}
               >
                 <div className={`w-full md:w-64 h-40 rounded-2xl overflow-hidden flex-shrink-0 ${statusConfig.bgAccent} flex items-center justify-center border ${statusConfig.borderColor}`}>
-                  {(() => {
-                    const avatar =
-                      booking.provider?.profile_image_url ||
-                      booking.provider?.image_url ||
-                      null;
-
-                    if (avatar) {
-                      return (
-                        <img
-                          src={avatar}
-                          alt={booking.provider?.full_name || "provider"}
-                          className="h-40 w-full object-cover"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src =
-                              `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                booking.provider?.full_name || "Provider"
-                              )}&background=008000&color=fff`;
-                          }}
-                        />
-                      );
-                    }
-
-                    return (
-                      <div className="flex items-center justify-center w-full h-full">
-                        <span className="material-symbols-outlined text-green-600 text-7xl">
-                          event_available
-                        </span>
-                      </div>
-                    );
-                  })()}
+                  <img
+                    src={providerAvatar}
+                    alt={providerName}
+                    className="h-40 w-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          providerName
+                        )}&background=008000&color=fff`;
+                    }}
+                  />
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between gap-4">
@@ -340,7 +328,7 @@ export default function BookingPage() {
                           {serviceLabel}
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">
-                          {booking.provider?.full_name || "Provider"}
+                          {providerName}
                         </p>
                       </div>
                       <span className="text-xs rounded-full bg-gray-100 px-3 py-1 font-bold text-gray-500">
