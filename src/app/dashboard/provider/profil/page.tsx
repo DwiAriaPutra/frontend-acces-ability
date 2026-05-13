@@ -548,9 +548,9 @@ export default function ProfileProviderPage() {
   }
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6 lg:space-y-8">
       <section>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Profil Provider</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Profil Provider</h2>
       </section>
 
       {error && (
@@ -565,9 +565,9 @@ export default function ProfileProviderPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-8">
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8">
+        <div className="lg:col-span-8 space-y-5 lg:space-y-8 min-w-0">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-6 lg:gap-8">
             {!showImageUpload ? (
               <>
                 <div className="relative">
@@ -597,25 +597,25 @@ export default function ProfileProviderPage() {
                   </button>
                 </div>
 
-                <div className="text-center md:text-left flex-1">
+                <div className="text-center md:text-left flex-1 min-w-0 w-full">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
+                    <div className="min-w-0 w-full">
                       <h3 className="text-2xl font-bold text-gray-900 mb-1">
                         <input
-                          className="text-2xl font-bold text-gray-900 bg-transparent border-none focus:ring-0"
+                          className="w-full min-w-0 bg-transparent border-none px-0 text-center md:text-left text-xl sm:text-2xl font-bold text-gray-900 focus:ring-0"
                           value={accountEdits.full_name ?? profileUser?.full_name ?? provider.full_name ?? ""}
                           onChange={(e) => handleAccountChange("full_name", e.target.value)}
                         />
                       </h3>
                       <p className="text-gray-500 text-sm">
                         <input
-                          className="text-sm text-gray-500 bg-transparent border-none focus:ring-0"
+                          className="w-full min-w-0 bg-transparent border-none px-0 text-center md:text-left text-sm text-gray-500 focus:ring-0"
                           value={accountEdits.email ?? profileUser?.email ?? provider.email ?? ""}
                           onChange={(e) => handleAccountChange("email", e.target.value)}
                         />
                       </p>
                     </div>
-                    <div className="bg-gray-100 rounded-xl px-6 py-3 flex flex-col items-center">
+                    <div className="w-full md:w-auto bg-gray-100 rounded-xl px-6 py-3 flex flex-col items-center">
                       <div className="flex items-center gap-1 text-green-600">
                         <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
                           star
@@ -626,20 +626,20 @@ export default function ProfileProviderPage() {
                     </div>
                   </div>
 
-                  <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="mt-6 lg:mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
                       <span className="material-symbols-outlined text-green-600">call</span>
                       <input
                         type="text"
-                        className="text-sm font-medium text-gray-700 bg-transparent border-none focus:outline-none"
+                        className="min-w-0 flex-1 bg-transparent border-none px-0 text-sm font-medium text-gray-700 focus:outline-none"
                         value={accountEdits.phone_number ?? profileUser?.phone_number ?? provider.phone_number ?? ""}
                         onChange={(e) => handleAccountChange("phone_number", e.target.value)}
                         placeholder="0812..."
                       />
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 min-w-0">
                       <span className="material-symbols-outlined text-green-600">location_on</span>
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="min-w-0 text-sm font-medium text-gray-700 break-words">
                         {provider.base_location_city || "-"}, {provider.province_name || "-"}
                       </span>
                     </div>
@@ -683,7 +683,7 @@ export default function ProfileProviderPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm">
             <form className="space-y-6" onSubmit={handleSave}>
               <div>
                 <h3 className="text-xl font-bold text-gray-900">Edit Profil Provider</h3>
@@ -883,9 +883,9 @@ export default function ProfileProviderPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center group hover:bg-green-600 transition-all duration-300">
-            <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors">
+        <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm text-center group hover:bg-green-600 transition-all duration-300">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors">
               <span className="material-symbols-outlined text-green-600 text-3xl group-hover:text-white">event_available</span>
             </div>
             <p className="text-4xl font-black text-gray-900 mb-1 group-hover:text-white transition-colors">
@@ -896,8 +896,8 @@ export default function ProfileProviderPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center group hover:bg-green-600 transition-all duration-300">
-            <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm text-center group hover:bg-green-600 transition-all duration-300">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors">
               <span className="material-symbols-outlined text-green-600 text-3xl group-hover:text-white">verified</span>
             </div>
             <p className="text-4xl font-black text-gray-900 mb-1 group-hover:text-white transition-colors">
@@ -908,7 +908,7 @@ export default function ProfileProviderPage() {
             </p>
           </div>
 
-          <div className="bg-green-50 rounded-3xl p-8 border border-green-100">
+          <div className="bg-green-50 rounded-3xl p-5 sm:p-6 lg:p-8 border border-green-100 sm:col-span-2 lg:col-span-1">
             <h4 className="text-green-800 font-bold text-lg mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined">info</span>
               Informasi Akun
@@ -947,7 +947,7 @@ export default function ProfileProviderPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-sm sm:col-span-2 lg:col-span-1">
             <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-green-600">schedule</span>
               Ketersediaan
@@ -955,12 +955,12 @@ export default function ProfileProviderPage() {
             <div className="space-y-3 text-sm text-gray-600">
               {availabilities.length > 0 ? (
                 availabilities.map((a) => (
-                  <div key={a.id} className="flex items-center justify-between gap-3 p-3 border rounded-lg">
-                    <div>
+                  <div key={a.id} className="flex flex-col gap-3 p-3 border rounded-lg sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
                       <div className="text-sm font-semibold">{dayNames[a.day_of_week]} {a.start_time} - {a.end_time}</div>
                       <div className="text-xs text-gray-500">{a.is_active ? "Aktif" : "Tidak aktif"}</div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-3">
                       <button
                         type="button"
                         className="text-xs font-medium text-green-600"
@@ -998,9 +998,9 @@ export default function ProfileProviderPage() {
                             <option key={d} value={idx}>{d}</option>
                           ))}
                         </select>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input type="time" defaultValue={item.start_time} onBlur={(e) => handleUpdateAvailability(item.id, { start_time: e.target.value })} className="px-3 py-2 rounded border" />
-                          <input type="time" defaultValue={item.end_time} onBlur={(e) => handleUpdateAvailability(item.id, { end_time: e.target.value })} className="px-3 py-2 rounded border" />
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <input type="time" defaultValue={item.start_time} onBlur={(e) => handleUpdateAvailability(item.id, { start_time: e.target.value })} className="w-full px-3 py-2 rounded border" />
+                          <input type="time" defaultValue={item.end_time} onBlur={(e) => handleUpdateAvailability(item.id, { end_time: e.target.value })} className="w-full px-3 py-2 rounded border" />
                         </div>
                         <div className="flex items-center gap-3">
                           <label className="flex items-center gap-2 text-sm">
@@ -1023,9 +1023,9 @@ export default function ProfileProviderPage() {
                     <option key={d} value={idx}>{d}</option>
                   ))}
                 </select>
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="time" value={newAvailability.start_time} onChange={(e) => setNewAvailability((s) => ({ ...s, start_time: e.target.value }))} className="px-3 py-2 rounded border" />
-                  <input type="time" value={newAvailability.end_time} onChange={(e) => setNewAvailability((s) => ({ ...s, end_time: e.target.value }))} className="px-3 py-2 rounded border" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <input type="time" value={newAvailability.start_time} onChange={(e) => setNewAvailability((s) => ({ ...s, start_time: e.target.value }))} className="w-full px-3 py-2 rounded border" />
+                  <input type="time" value={newAvailability.end_time} onChange={(e) => setNewAvailability((s) => ({ ...s, end_time: e.target.value }))} className="w-full px-3 py-2 rounded border" />
                 </div>
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={newAvailability.is_active} onChange={(e) => setNewAvailability((s) => ({ ...s, is_active: e.target.checked }))} /> Aktif

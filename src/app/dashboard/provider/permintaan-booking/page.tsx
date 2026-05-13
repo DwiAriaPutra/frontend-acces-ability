@@ -373,88 +373,103 @@ export default function PermintaanBookingPage() {
             Kelola jadwal dan konfirmasi permintaan layanan terbaru dari klien Anda.
           </p>
         </div>
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:w-auto lg:items-center lg:flex-wrap">
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setCurrentPage(1);
-              setStatusFilter(e.target.value);
-            }}
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
-          >
-            <option value="all">Semua Status</option>
-            <option value="pending">Menunggu</option>
-            <option value="accepted">Diterima</option>
-            <option value="completed">Selesai</option>
-            <option value="cancelled">Dibatalkan</option>
-          </select>
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 lg:w-auto">
+          <label className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-wide text-gray-400">Status</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setStatusFilter(e.target.value);
+              }}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700"
+            >
+              <option value="all">Semua Status</option>
+              <option value="pending">Menunggu</option>
+              <option value="accepted">Diterima</option>
+              <option value="completed">Selesai</option>
+              <option value="cancelled">Dibatalkan</option>
+            </select>
+          </label>
 
-          <select
-            value={dateRangeFilter}
-            onChange={(e) => {
-              setCurrentPage(1);
-              setDateRangeFilter(e.target.value);
-            }}
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
-          >
-            <option value="all">Semua Waktu</option>
-            <option value="today">Hari Ini</option>
-            <option value="week">Minggu Ini</option>
-            <option value="month">Bulan Ini</option>
-          </select>
+          <label className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-wide text-gray-400">Periode</span>
+            <select
+              value={dateRangeFilter}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setDateRangeFilter(e.target.value);
+              }}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700"
+            >
+              <option value="all">Semua Waktu</option>
+              <option value="today">Hari Ini</option>
+              <option value="week">Minggu Ini</option>
+              <option value="month">Bulan Ini</option>
+            </select>
+          </label>
 
-          <select
-            value={pageLimit}
-            onChange={(e) => {
-              setCurrentPage(1);
-              setPageLimit(Number(e.target.value));
-            }}
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
-          >
-            <option value={5}>5 per halaman</option>
-            <option value={10}>10 per halaman</option>
-            <option value={25}>25 per halaman</option>
-            <option value={50}>50 per halaman</option>
-          </select>
-
-          <button className="flex w-full items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors sm:col-span-2 lg:w-auto">
-            <span className="material-symbols-outlined text-lg">download</span>
-            Ekspor PDF
-          </button>
+          <label className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-wide text-gray-400">Tampilan</span>
+            <select
+              value={pageLimit}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setPageLimit(Number(e.target.value));
+              }}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700"
+            >
+              <option value={5}>5 per halaman</option>
+              <option value={10}>10 per halaman</option>
+              <option value={25}>25 per halaman</option>
+              <option value={50}>50 per halaman</option>
+            </select>
+          </label>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-32">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Total Permintaan
-          </span>
-          <div className="flex items-center justify-between">
-            <span className="text-3xl font-bold">{isLoading ? "..." : totalRequests}</span>
-            <div className="w-10 h-10 bg-blue-50 text-blue-600 flex items-center justify-center rounded-lg">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Permintaan</span>
+              <p className="mt-3 text-3xl font-black text-gray-900">{isLoading ? "..." : totalRequests}</p>
+            </div>
+            <div className="w-11 h-11 bg-blue-50 text-blue-600 flex items-center justify-center rounded-xl">
               <span className="material-symbols-outlined">inbox</span>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-32">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Diterima
-          </span>
-          <div className="flex items-center justify-between">
-            <span className="text-3xl font-bold text-green-600">{isLoading ? "..." : acceptedRequests}</span>
-            <div className="w-10 h-10 bg-green-50 text-green-600 flex items-center justify-center rounded-lg">
+        <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Menunggu</span>
+              <p className="mt-3 text-3xl font-black text-amber-700">{isLoading ? "..." : pendingRequests}</p>
+            </div>
+            <div className="w-11 h-11 bg-white text-amber-600 flex items-center justify-center rounded-xl border border-amber-100">
+              <span className="material-symbols-outlined">pending_actions</span>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-green-100 bg-green-50/40 p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-green-600 uppercase tracking-wider">Diterima</span>
+              <p className="mt-3 text-3xl font-black text-green-700">{isLoading ? "..." : acceptedRequests}</p>
+            </div>
+            <div className="w-11 h-11 bg-white text-green-600 flex items-center justify-center rounded-xl border border-green-100">
               <span className="material-symbols-outlined">check_circle</span>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-32">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Selesai
-          </span>
-          <div className="flex items-center justify-between">
-            <span className="text-3xl font-bold">{isLoading ? "..." : completedRequests}</span>
-            <div className="w-10 h-10 bg-green-50 text-green-600 flex items-center justify-center rounded-lg">
-              <span className="material-symbols-outlined">check_circle</span>
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Selesai</span>
+              <p className="mt-3 text-3xl font-black text-gray-900">{isLoading ? "..." : completedRequests}</p>
+            </div>
+            <div className="w-11 h-11 bg-gray-50 text-gray-600 flex items-center justify-center rounded-xl">
+              <span className="material-symbols-outlined">task_alt</span>
             </div>
           </div>
         </div>
