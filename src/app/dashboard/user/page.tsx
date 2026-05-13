@@ -156,9 +156,6 @@ export default function UserDashboardPage() {
       <section className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-gray-900">Kategori Layanan</h2>
-          <a className="text-green-600 font-semibold hover:underline" href="#">
-            Lihat Semua
-          </a>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Category Card 1 */}
@@ -262,10 +259,16 @@ export default function UserDashboardPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-gray-600 text-sm" data-label="Layanan">
+                      <td
+                        className="px-6 py-5 text-gray-600 text-sm"
+                        data-label="Layanan"
+                      >
                         {booking.service_type?.name || "Layanan Pendampingan"}
                       </td>
-                      <td className="px-6 py-5 text-gray-600 text-sm" data-label="Tanggal">
+                      <td
+                        className="px-6 py-5 text-gray-600 text-sm"
+                        data-label="Tanggal"
+                      >
                         {formatBookingDate(booking.booking_date)}
                       </td>
                       <td className="px-6 py-5" data-label="Status">
