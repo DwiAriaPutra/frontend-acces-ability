@@ -11,6 +11,21 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Booking, getUserBookings, getMyProvider, Provider } from "@/api";
+import { showAppNotification } from "@/utils/notifications";
+
+const normalizeVerificationStatus = (provider?: Provider | null) => {
+  const status = (provider?.verification_status || "").toLowerCase();
+
+  if (provider?.is_verified || status === "approved" || status === "verified") {
+    return "approved";
+  }
+
+  if (status === "rejected") {
+    return "rejected";
+  }
+
+  return "pending";
+};
 
 export default function ProviderDashboardPage() {
   const router = useRouter();
@@ -19,6 +34,7 @@ export default function ProviderDashboardPage() {
   const [providerProfile, setProviderProfile] = useState<Provider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [approvalNotice, setApprovalNotice] = useState<string | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
@@ -59,7 +75,50 @@ export default function ProviderDashboardPage() {
         const bookingsData = await getUserBookings(token);
         setBookings(bookingsData);
         const profile = await getMyProvider(token);
-        if (profile) setProviderProfile(profile);
+        if (profile) {
+          setProviderProfile(profile);
+
+          try {
+            const cachedUserRaw = localStorage.getItem("user");
+            const cachedUser = cachedUserRaw ? JSON.parse(cachedUserRaw) : null;
+            const previousStatus = normalizeVerificationStatus(
+              cachedUser?.providerProfile
+            );
+            const currentStatus = normalizeVerificationStatus(profile);
+
+            if (cachedUser) {
+              localStorage.setItem(
+                "user",
+                JSON.stringify({
+                  ...cachedUser,
+                  providerProfile: profile,
+                })
+              );
+              window.dispatchEvent(new Event("user-updated"));
+            }
+
+            const notifiedKey = `provider-approved-notified-${profile.id}`;
+            const alreadyNotified = localStorage.getItem(notifiedKey) === "true";
+
+            if (
+              previousStatus !== "approved" &&
+              currentStatus === "approved" &&
+              !alreadyNotified
+            ) {
+              setApprovalNotice(
+                "Akun provider Anda sudah di-approved oleh admin dan kini berstatus terverifikasi."
+              );
+              showAppNotification("Provider Sudah Disetujui", {
+                body: "Akun provider Anda sudah di-approved oleh admin dan kini terverifikasi.",
+                tag: `provider-approved-${profile.id}`,
+                url: "/dashboard/provider",
+              });
+              localStorage.setItem(notifiedKey, "true");
+            }
+          } catch (storageError) {
+            console.error("Error syncing provider verification status", storageError);
+          }
+        }
       } catch (error) {
         console.error("Error fetching provider data:", error);
         const msg = error instanceof Error ? error.message : String(error);
@@ -105,6 +164,27 @@ export default function ProviderDashboardPage() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  const verificationStatus = normalizeVerificationStatus(providerProfile);
+  const isProviderVerified = verificationStatus === "approved";
+  const isProviderRejected = verificationStatus === "rejected";
+  const verificationBadge = isProviderVerified
+    ? {
+        icon: "verified",
+        label: "Terverifikasi",
+        className: "bg-white/20 border-white/30 text-white",
+      }
+    : isProviderRejected
+      ? {
+          icon: "cancel",
+          label: "Pengajuan Ditolak",
+          className: "bg-rose-500/90 border-rose-200/50 text-white",
+        }
+      : {
+          icon: "pending",
+          label: "Menunggu Approval Admin",
+          className: "bg-amber-400/95 border-amber-100/60 text-amber-950",
+        };
 
   const getTimeAgo = (dateValue?: string) => {
     if (!dateValue) return "";
@@ -166,15 +246,17 @@ export default function ProviderDashboardPage() {
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7rfahyaaauh3t3QtQhB7d_S8ufWwtB-O7pPdKP2wNDc8_TVBafADfR9crUfHeU6FY2OUdC69gdBQJaypbklpCJdNiyujPIOXtOIss8equO535zC_3ILf21KVAf5NmRjH01esGaTmHwHAbGF3lgnQ1tNtkh16KgSKgXlYuFnSUzt1psMeqMgvNYEtx_01boAoh11VndLcPGTHqgWeTUhlqp9VgNB1d-CNeF2FZC_iLqya-rsGkX08ByS0WoD7uKpLFPNuraVbERzw"
         />
         <div className="relative z-20 min-h-64 flex flex-col justify-center px-6 sm:px-8 lg:px-12 py-8 text-white">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-4 border border-white/30">
+          <div
+            className={`inline-flex items-center gap-2 backdrop-blur-md px-4 py-1.5 rounded-full w-fit mb-4 border ${verificationBadge.className}`}
+          >
             <span
               className="material-symbols-outlined text-sm"
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
-              verified
+              {verificationBadge.icon}
             </span>
             <span className="text-xs font-bold uppercase tracking-wider">
-              Terverifikasi
+              {verificationBadge.label}
             </span>
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold mb-2">
@@ -186,6 +268,113 @@ export default function ProviderDashboardPage() {
           </p>
         </div>
       </div>
+
+      {approvalNotice ? (
+        <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+              <span
+                className="material-symbols-outlined"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                verified
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-emerald-900">
+                Provider berhasil diverifikasi
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-emerald-700">
+                {approvalNotice}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setApprovalNotice(null)}
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-700 hover:bg-emerald-100"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {!isLoading && !isProviderVerified ? (
+        <div
+          className={`rounded-3xl border p-6 shadow-sm ${
+            isProviderRejected
+              ? "border-rose-100 bg-rose-50"
+              : "border-amber-100 bg-amber-50"
+          }`}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <div
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
+                isProviderRejected
+                  ? "bg-rose-100 text-rose-700"
+                  : "bg-amber-100 text-amber-700"
+              }`}
+            >
+              <span className="material-symbols-outlined">
+                {isProviderRejected ? "cancel" : "pending_actions"}
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3
+                className={`text-lg font-bold ${
+                  isProviderRejected ? "text-rose-900" : "text-amber-900"
+                }`}
+              >
+                {isProviderRejected
+                  ? "Pengajuan provider ditolak admin"
+                  : "Akun provider belum di-approved admin"}
+              </h3>
+              <p
+                className={`mt-1 text-sm leading-6 ${
+                  isProviderRejected ? "text-rose-700" : "text-amber-800"
+                }`}
+              >
+                {isProviderRejected
+                  ? "Silakan periksa kembali profil dan sertifikasi Anda, lalu hubungi admin jika membutuhkan peninjauan ulang."
+                  : "Dashboard tetap bisa dilihat, namun akun Anda belum berstatus terverifikasi sampai admin menyetujui pengajuan provider."}
+              </p>
+            </div>
+            <Link
+              href="/dashboard/provider/profil"
+              className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold ${
+                isProviderRejected
+                  ? "bg-rose-600 text-white hover:bg-rose-700"
+                  : "bg-amber-600 text-white hover:bg-amber-700"
+              }`}
+            >
+              Periksa Profil
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
+      {!isLoading && isProviderVerified && !approvalNotice ? (
+        <div className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+              <span
+                className="material-symbols-outlined"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                verified
+              </span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">
+                Akun provider terverifikasi
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-gray-600">
+                Provider Anda sudah di-approved oleh admin dan dapat tampil sebagai provider terverifikasi.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Statistics Bento Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
