@@ -50,7 +50,7 @@ export default function PermintaanBookingPage() {
   const minRejectLength = 15;
 
   const fetchBookings = async (page = currentPage, status = statusFilter, dateRange = dateRangeFilter) => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       setIsLoading(false);
@@ -76,7 +76,7 @@ export default function PermintaanBookingPage() {
   };
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
 
     if (!userStr) {
       setUnauthorized(true);
@@ -242,7 +242,7 @@ export default function PermintaanBookingPage() {
   };
 
   const handleAccept = async (bookingId: string) => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;
@@ -265,7 +265,7 @@ export default function PermintaanBookingPage() {
   };
 
   const handleComplete = async (bookingId: string) => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;
@@ -290,7 +290,7 @@ export default function PermintaanBookingPage() {
   const handleRejectConfirm = async () => {
     if (!rejectModalBooking) return;
 
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;
@@ -315,7 +315,7 @@ export default function PermintaanBookingPage() {
   };
 
   const openDetailModal = async (bookingId: string) => {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setUnauthorized(true);
       return;

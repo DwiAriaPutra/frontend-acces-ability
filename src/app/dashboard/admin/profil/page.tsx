@@ -24,7 +24,7 @@ export default function AdminProfilePage() {
   const [user, setUser] = useState<AdminUser | null>(null);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem("user");
     if (!userStr) {
       router.replace('/login');
       return;

@@ -45,8 +45,8 @@ function GoogleCallbackContent() {
         const result = await handleGoogleCallback(code);
 
         if (result.success && result.data) {
-          localStorage.setItem('accessToken', result.data.token);
-          localStorage.setItem('user', JSON.stringify({
+          sessionStorage.setItem("accessToken", result.data.token);
+          sessionStorage.setItem("user", JSON.stringify({
             ...result.data.user,
             providerProfile: result.data.providerProfile
           }));

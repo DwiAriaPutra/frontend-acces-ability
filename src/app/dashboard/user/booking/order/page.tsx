@@ -270,7 +270,7 @@ export default function BookingOrderPage() {
       return;
     }
 
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("accessToken");
     if (!token) {
       setErrorMessage("Token login tidak ditemukan. Silakan login ulang.");
       return;

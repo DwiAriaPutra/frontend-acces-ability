@@ -25,8 +25,8 @@ const Header = () => {
 
   useEffect(() => {
     const syncUserFromStorage = () => {
-      const userStr = localStorage.getItem('user');
-      const token = localStorage.getItem('accessToken');
+      const userStr = sessionStorage.getItem("user");
+      const token = sessionStorage.getItem("accessToken");
 
       if (userStr && token) {
         try {

@@ -18,7 +18,7 @@ export default function UserDashboardPage() {
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -31,7 +31,7 @@ export default function UserDashboardPage() {
     }
 
     const fetchBookings = async () => {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
         setIsLoadingBookings(false);
         return;

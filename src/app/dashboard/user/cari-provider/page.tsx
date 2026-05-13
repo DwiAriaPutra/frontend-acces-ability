@@ -232,7 +232,14 @@ export default function CariProviderPage() {
       provider.user?.full_name?.toLowerCase() ||
       provider.full_name?.toLowerCase() ||
       "";
-    const location = provider.base_location_city?.toLowerCase() || "";
+    const location = [
+      provider.base_location_city,
+      provider.regency_name,
+      provider.province_name,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
     const specialization =
       provider.specializations
         ?.map((item) => item.serviceType?.name?.toLowerCase() || "")
@@ -274,22 +281,46 @@ export default function CariProviderPage() {
               Temukan Pendamping Sesuai Kebutuhan Anda
             </p>
           </div>
-          <button
-            onClick={() => {
-              setTempSearchQuery(searchQuery);
-              setTempServiceTypeId(selectedServiceTypeId);
-              setTempProvinceId(selectedProvinceId);
-              setTempRegencyId(selectedRegencyId);
-              setTempMinYearsExperience(selectedMinYearsExperience);
-              setTempMinPrice(selectedMinPrice);
-              setTempMaxPrice(selectedMaxPrice);
-              setShowFilterModal(true);
-            }}
-            className="flex w-full sm:w-auto items-center justify-center gap-2 px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all active:scale-95 shadow-lg shadow-green-600/30 whitespace-nowrap"
-          >
-            <span className="material-symbols-outlined text-xl">tune</span>
-            Filter Lanjutan
-          </button>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-80">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
+                search
+              </span>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Cari nama, lokasi, kategori..."
+                className="h-12 w-full rounded-xl border border-gray-200 bg-white pl-12 pr-11 text-sm text-gray-900 outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                  aria-label="Hapus pencarian"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              ) : null}
+            </div>
+            <button
+              onClick={() => {
+                setTempSearchQuery(searchQuery);
+                setTempServiceTypeId(selectedServiceTypeId);
+                setTempProvinceId(selectedProvinceId);
+                setTempRegencyId(selectedRegencyId);
+                setTempMinYearsExperience(selectedMinYearsExperience);
+                setTempMinPrice(selectedMinPrice);
+                setTempMaxPrice(selectedMaxPrice);
+                setShowFilterModal(true);
+              }}
+              className="flex w-full sm:w-auto items-center justify-center gap-2 px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all active:scale-95 shadow-lg shadow-green-600/30 whitespace-nowrap"
+            >
+              <span className="material-symbols-outlined text-xl">tune</span>
+              Filter Lanjutan
+            </button>
+          </div>
         </div>
 
         {isLoading ? (

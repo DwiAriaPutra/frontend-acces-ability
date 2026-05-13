@@ -89,6 +89,7 @@ export default function RegisterProviderPage() {
   // Loading & error states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isAgreementChecked, setIsAgreementChecked] = useState(false);
 
   // Load provinces on mount
   useEffect(() => {
@@ -231,7 +232,12 @@ export default function RegisterProviderPage() {
         setError('Password harus 8-72 karakter');
         return false;
       }
-      if (formData.phone_number && (formData.phone_number.length < 8 || formData.phone_number.length > 30)) {
+      if (!formData.phone_number.trim()) {
+        setError('Nomor telepon harus diisi');
+        return false;
+      }
+      const phoneNumber = formData.phone_number.trim();
+      if (phoneNumber.length < 8 || phoneNumber.length > 30) {
         setError('Nomor telepon harus 8-30 karakter');
         return false;
       }
@@ -277,6 +283,10 @@ export default function RegisterProviderPage() {
         setError('Sertifikat harus diunggah');
         return false;
       }
+      if (!isAgreementChecked) {
+        setError('Anda harus menyetujui syarat dan ketentuan sebelum mengajukan provider');
+        return false;
+      }
     }
 
     return true;
@@ -291,19 +301,19 @@ export default function RegisterProviderPage() {
     try {
       // Build payload untuk API
       const payload: RegisterProviderPayload = {
-        full_name: formData.full_name,
-        email: formData.email,
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim(),
         password: formData.password,
-        phone_number: formData.phone_number,
+        phone_number: formData.phone_number.trim(),
         role: 'provider',
         province_id: formData.province_id,
         province_name: formData.province_name,
         regency_id: formData.regency_id,
         regency_name: formData.regency_name,
-        base_location_city: formData.base_location_city,
+        base_location_city: formData.base_location_city.trim(),
         price_per_hour: formData.price_per_hour,
         years_experience: formData.years_experience || undefined,
-        bio: formData.bio || undefined,
+        bio: formData.bio.trim() || undefined,
         provider_specialization: formData.provider_specialization,
         profile_image: formData.profile_image || undefined,
         provider_certificate: formData.provider_certificate || undefined,
@@ -321,10 +331,10 @@ export default function RegisterProviderPage() {
       setStep(4);
       // Store token if needed
       if (result.data?.token) {
-        localStorage.setItem('accessToken', result.data.token);
+        sessionStorage.setItem("accessToken", result.data.token);
       }
       if (result.data?.user) {
-        localStorage.setItem('user', JSON.stringify({
+        sessionStorage.setItem("user", JSON.stringify({
           ...result.data.user,
           providerProfile: result.data.providerProfile
         }));
@@ -510,7 +520,7 @@ export default function RegisterProviderPage() {
 
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-gray-700">
-                    Nomor Telepon
+                    Nomor Telepon <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -787,6 +797,8 @@ export default function RegisterProviderPage() {
                     <input
                       type="checkbox"
                       id="agreement"
+                      checked={isAgreementChecked}
+                      onChange={(event) => setIsAgreementChecked(event.target.checked)}
                       className="w-5 h-5 rounded border-gray-300 text-brand-green focus:ring-brand-green"
                     />
                   </div>
